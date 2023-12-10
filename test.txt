@@ -1,0 +1,13 @@
+struct mystruct {
+    int x;
+    int y;
+    char ch;
+};
+int zzz;
+float floatareala;
+int func();
+int func_cu_param(int a, int b);
+begin
+z := 69;
+floatareala := 5.0;
+end
