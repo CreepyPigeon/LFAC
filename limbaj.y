@@ -40,7 +40,7 @@ struct_var : TYPE ID
 
 global_vars : global_decl ';'
           | global_vars global_decl ';'
-
+          ;
 global_decl : TYPE ID                             // int x
                | TYPE ID ASSIGN EXPR              // int x = 5
                | TYPE ID ASSIGN ID                // int x = y
@@ -50,10 +50,13 @@ global_decl : TYPE ID                             // int x
                                                        // array[int,5] myArray; - asta e un exemplu
                | ARRAY '[' TYPE ',' CONST_NR ']' ID ASSIGN '{' ARR_LIST '}' // Array cu elemente
                                                                             // array[int,5] myArray = {1,2,3,4,5};
-               | CONST_TYPE TYPE ASSIGN CONST_EXPR     // Constant expressions
-                                                       // const int x = 5;
-            ;
+               | CONST_TYPE TYPE ASSIGN EXPR      // Constant expressions
+                                                  // const int x = 5;
+               ;
 
+ARR_LIST : EXPR
+           | ARR_LIST ',' EXPR
+           ;
 program : BGIN list END  
      ;
 list :  statement ';' 
@@ -61,7 +64,12 @@ list :  statement ';'
      ;
 
 statement: ID ASSIGN ID
-         | ID ASSIGN VALUE
+         | ID ASSIGN EXPR
+         ;
+
+// De implementat
+// EXPR: 
+
 VALUE : INT_NR
      | FLOAT_NR
      | CHAR 
