@@ -12,6 +12,10 @@ class IdList ids;
 
 %union {
      char* string;
+     int int_val;
+     float float_val;
+     bool bool_val;
+     char char_val;
 }
 %token  BGIN END ASSIGN INT_NR FLOAT_NR CONST_TYPE USER_STRUCT
 %token<string> ID TYPE
@@ -31,46 +35,34 @@ struct_vars : struct_var ';'
                | struct_vars struct_var ';'
 
 struct_var : TYPE ID 
+               | ID ID // Custom classes
+               | ARRAY '[' TYPE ',' CONST_NR ']' ID // Arrays 
 
-global_vars : decl ';'
-          | global_vars decl ';'
+global_vars : global_decl ';'
+          | global_vars global_decl ';'
 
-
-decl       :  TYPE ID { if(!ids.existsVar($2)) {
-                          ids.addVar($1,$2);
-                     }
-                    }
-           | TYPE ID '(' list_param ')'  
-           | TYPE ID '(' ')' 
-     
-           ;
-
-list_param : param
-            | list_param ','  param 
+global_decl : TYPE ID                             // int x
+               | TYPE ID ASSIGN EXPR              // int x = 5
+               | TYPE ID ASSIGN ID                // int x = y
+               | ID ID                            // MyStruct x; - primul ID e clasa, a doilea ID e numele variabilei
+               | ID ID ASSIGN ID                  // MyStruct x = y;
+               | ARRAY '[' TYPE ',' CONST_NR ']' ID    // Arrays; am gandit arrays ca fiind
+                                                       // array[int,5] myArray; - asta e un exemplu
+               | ARRAY '[' TYPE ',' CONST_NR ']' ID ASSIGN '{' ARR_LIST '}' // Array cu elemente
+                                                                            // array[int,5] myArray = {1,2,3,4,5};
+               | CONST_TYPE TYPE ASSIGN CONST_EXPR     // Constant expressions
+                                                       // const int x = 5;
             ;
-            
-param : TYPE ID 
-      ; 
-      
 
 program : BGIN list END  
      ;
-     
-
 list :  statement ';' 
      | list statement ';'
      ;
 
 statement: ID ASSIGN ID
-         | ID ASSIGN value  		 
-         | ID '(' call_list ')'
-         ;
-        
-call_list : value
-           | call_list ',' value
-           ;
-
-value : INT_NR
+         | ID ASSIGN VALUE
+VALUE : INT_NR
      | FLOAT_NR
      | CHAR 
      | STRING 
@@ -82,8 +74,5 @@ printf("error: %s at line:%d\n",s,yylineno);
 
 int main(int argc, char** argv){
      yyin=fopen(argv[1],"r");
-     yyparse();
-     cout << "Variables:" <<endl;
-     ids.printVars();
-    
+     yyparse(); 
 } 
