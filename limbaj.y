@@ -17,9 +17,21 @@ class IdList ids;
      bool bool_val;
      char char_val;
 }
-%token  BGIN END ASSIGN INT_NR FLOAT_NR CONST_TYPE USER_STRUCT
-%token<string> ID TYPE
+%token CONST ARRAY BGIN END USER_STRUCT WHILE FOR IF ELSE DO PRINT
+%token<string> INT_TYPE FLOAT_TYPE CHAR_TYPE STRING_TYPE BOOL_TYPE ID
+
+%token<int_val> INT_NR
+%token<float_val> FLOAT_NR
+%token<char_val> CHAR
+%token<string> STRING
+%token<bool_val> BOOL
+
+%token ASSIGN EQ NEQ LT GT LE GE AND OR NOT
+
 %start progr
+
+
+
 %%
 progr: user_structs global_vars program {printf("The programme is correct!\n");}
      ;
@@ -29,34 +41,29 @@ user_structs :  struct_decl ';'
 	      ;
 
 struct_decl : USER_STRUCT ID struct_vars_block
-;
+               ;
 struct_vars_block : '{' struct_vars '}'
 struct_vars : struct_var ';'
                | struct_vars struct_var ';'
-
+               ;
 struct_var : TYPE ID 
                | ID ID // Custom classes
                | ARRAY '[' TYPE ',' CONST_NR ']' ID // Arrays 
-
+               ;
 global_vars : global_decl ';'
           | global_vars global_decl ';'
           ;
 global_decl : TYPE ID                             // int x
-               | TYPE ID ASSIGN EXPR              // int x = 5
-               | TYPE ID ASSIGN ID                // int x = y
+               | TYPE ID ASSIGN EXPR              // int x := 5
+               | TYPE ID ASSIGN ID                // int x := y
                | ID ID                            // MyStruct x; - primul ID e clasa, a doilea ID e numele variabilei
                | ID ID ASSIGN ID                  // MyStruct x = y;
                | ARRAY '[' TYPE ',' CONST_NR ']' ID    // Arrays; am gandit arrays ca fiind
                                                        // array[int,5] myArray; - asta e un exemplu
-               | ARRAY '[' TYPE ',' CONST_NR ']' ID ASSIGN '{' ARR_LIST '}' // Array cu elemente
-                                                                            // array[int,5] myArray = {1,2,3,4,5};
-               | CONST_TYPE TYPE ASSIGN EXPR      // Constant expressions
+               | CONST TYPE ASSIGN EXPR      // Constant expressions
                                                   // const int x = 5;
                ;
 
-ARR_LIST : EXPR
-           | ARR_LIST ',' EXPR
-           ;
 program : BGIN list END  
      ;
 list :  statement ';' 
@@ -70,10 +77,23 @@ statement: ID ASSIGN ID
 // De implementat
 // EXPR: 
 
+//Temp rules
+CONST_NR : INT_NR;
+EXPR : INT_NR;
+
+TYPE : INT_TYPE
+     | FLOAT_TYPE
+     | CHAR_TYPE
+     | STRING_TYPE
+     | BOOL_TYPE
+     | ID
+     ;
+
 VALUE : INT_NR
      | FLOAT_NR
      | CHAR 
      | STRING 
+     | BOOL
      ;
 %%
 void yyerror(const char * s){

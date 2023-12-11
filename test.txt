@@ -1,13 +1,12 @@
-struct mystruct {
+struct myStruct {
     int x;
-    int y;
-    char ch;
+    float y;
+    char z;
 };
-int zzz;
-float floatareala;
-int func();
-int func_cu_param(int a, int b);
+myStruct x;
+float abc;
+array[int,5] myArr;
 begin
-z := 69;
-floatareala := 5.0;
+    x:=2;
+    y:=3;
 end

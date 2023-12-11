@@ -54,15 +54,38 @@ extern int yydebug;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    BGIN = 258,                    /* BGIN  */
-    END = 259,                     /* END  */
-    ASSIGN = 260,                  /* ASSIGN  */
-    INT_NR = 261,                  /* INT_NR  */
-    FLOAT_NR = 262,                /* FLOAT_NR  */
-    CONST_TYPE = 263,              /* CONST_TYPE  */
-    USER_STRUCT = 264,             /* USER_STRUCT  */
-    ID = 265,                      /* ID  */
-    TYPE = 266                     /* TYPE  */
+    CONST = 258,                   /* CONST  */
+    ARRAY = 259,                   /* ARRAY  */
+    BGIN = 260,                    /* BGIN  */
+    END = 261,                     /* END  */
+    USER_STRUCT = 262,             /* USER_STRUCT  */
+    WHILE = 263,                   /* WHILE  */
+    FOR = 264,                     /* FOR  */
+    IF = 265,                      /* IF  */
+    ELSE = 266,                    /* ELSE  */
+    DO = 267,                      /* DO  */
+    PRINT = 268,                   /* PRINT  */
+    INT_TYPE = 269,                /* INT_TYPE  */
+    FLOAT_TYPE = 270,              /* FLOAT_TYPE  */
+    CHAR_TYPE = 271,               /* CHAR_TYPE  */
+    STRING_TYPE = 272,             /* STRING_TYPE  */
+    BOOL_TYPE = 273,               /* BOOL_TYPE  */
+    ID = 274,                      /* ID  */
+    INT_NR = 275,                  /* INT_NR  */
+    FLOAT_NR = 276,                /* FLOAT_NR  */
+    CHAR = 277,                    /* CHAR  */
+    STRING = 278,                  /* STRING  */
+    BOOL = 279,                    /* BOOL  */
+    ASSIGN = 280,                  /* ASSIGN  */
+    EQ = 281,                      /* EQ  */
+    NEQ = 282,                     /* NEQ  */
+    LT = 283,                      /* LT  */
+    GT = 284,                      /* GT  */
+    LE = 285,                      /* LE  */
+    GE = 286,                      /* GE  */
+    AND = 287,                     /* AND  */
+    OR = 288,                      /* OR  */
+    NOT = 289                      /* NOT  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -74,8 +97,12 @@ union YYSTYPE
 #line 13 "limbaj.y"
 
      char* string;
+     int int_val;
+     float float_val;
+     bool bool_val;
+     char char_val;
 
-#line 79 "limbaj.tab.h"
+#line 106 "limbaj.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
