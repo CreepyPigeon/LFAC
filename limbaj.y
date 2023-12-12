@@ -27,6 +27,16 @@ class IdList ids;
 %token<bool_val> BOOL
 
 %token ASSIGN EQ NEQ LT GT LE GE AND OR NOT
+%nonassoc EQ NEQ LT LE GT GE NOT
+
+
+%type <int_val> ARITH_EXPR EXPR
+%type <bool_val> BOOL_EXPR
+
+%left '+' '-'
+%left '*' '/'
+%nonassoc '!'
+%left '(' ')'
 
 %start progr
 
@@ -72,10 +82,32 @@ list :  statement ';'
 
 statement: ID ASSIGN ID
          | ID ASSIGN EXPR
+         | ID ASSIGN BOOL_EXPR
          ;
 
 // De implementat
 // EXPR: 
+
+EXPR : ARITH_EXPR
+     | BOOL_EXPR
+     ;
+
+ARITH_EXPR : ARITH_EXPR '+' ARITH_EXPR {$$ = $1 + $3; }
+           | ARITH_EXPR '-' ARITH_EXPR {$$ = $1 - $3; }
+           | ARITH_EXPR '*' ARITH_EXPR {$$ = $1 * $3; }
+           | ARITH_EXPR '/' ARITH_EXPR {$$ = $1 / $3; }
+           | '(' ARITH_EXPR ')' {$$ = $2; }
+           | INT_NR {$$ = $1; }
+           ;
+
+BOOL_EXPR : BOOL_EXPR EQ BOOL_EXPR {$$ = $1 == $3; }
+          | BOOL_EXPR NEQ BOOL_EXPR {$$ = $1 != $3; }
+          | BOOL_EXPR LT BOOL_EXPR {$$ = $1 < $3; }
+          | BOOL_EXPR LE BOOL_EXPR {$$ = $1 <= $3; }
+          | BOOL_EXPR GT BOOL_EXPR {$$ = $1 > $3; }
+          | BOOL_EXPR GE BOOL_EXPR {$$ = $1 >= $3; }
+          | ARITH_EXPR {$$ = $1; }
+          ;
 
 //Temp rules
 CONST_NR : INT_NR;

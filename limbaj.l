@@ -56,7 +56,6 @@ int yycollumnno=1;
 [ \t]+ {} //Whitespaces
 
 
-
 . {return yytext[0];} //Returnam orice caracter
 
  

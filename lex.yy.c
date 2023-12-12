@@ -976,12 +976,12 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 60 "limbaj.l"
+#line 59 "limbaj.l"
 {return yytext[0];} //Returnam orice caracter
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 63 "limbaj.l"
+#line 62 "limbaj.l"
 ECHO;
 	YY_BREAK
 #line 988 "lex.yy.c"
@@ -1989,4 +1989,4 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 63 "limbaj.l"
+#line 62 "limbaj.l"
