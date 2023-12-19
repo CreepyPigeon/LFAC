@@ -58,19 +58,19 @@ extern int yydebug;
     ARRAY = 259,                   /* ARRAY  */
     BGIN = 260,                    /* BGIN  */
     END = 261,                     /* END  */
-    USER_STRUCT = 262,             /* USER_STRUCT  */
-    WHILE = 263,                   /* WHILE  */
-    FOR = 264,                     /* FOR  */
-    IF = 265,                      /* IF  */
-    ELSE = 266,                    /* ELSE  */
-    DO = 267,                      /* DO  */
-    PRINT = 268,                   /* PRINT  */
+    WHILE = 262,                   /* WHILE  */
+    FOR = 263,                     /* FOR  */
+    IF = 264,                      /* IF  */
+    ELSE = 265,                    /* ELSE  */
+    DO = 266,                      /* DO  */
+    PRINT = 267,                   /* PRINT  */
+    ID = 268,                      /* ID  */
     INT_TYPE = 269,                /* INT_TYPE  */
     FLOAT_TYPE = 270,              /* FLOAT_TYPE  */
     CHAR_TYPE = 271,               /* CHAR_TYPE  */
     STRING_TYPE = 272,             /* STRING_TYPE  */
     BOOL_TYPE = 273,               /* BOOL_TYPE  */
-    ID = 274,                      /* ID  */
+    USER_STRUCT = 274,             /* USER_STRUCT  */
     INT_NR = 275,                  /* INT_NR  */
     FLOAT_NR = 276,                /* FLOAT_NR  */
     CHAR = 277,                    /* CHAR  */
@@ -94,15 +94,17 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 13 "limbaj.y"
+#line 27 "limbaj.y"
 
      char* string;
      int int_val;
      float float_val;
      bool bool_val;
      char char_val;
+     Type type;
+     Variable* variable;
 
-#line 106 "limbaj.tab.h"
+#line 108 "limbaj.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

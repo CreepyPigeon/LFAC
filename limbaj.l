@@ -9,18 +9,18 @@ int yycollumnno=1;
 %option noyywrap
 %%
 
-"int" {yylval.string = strdup(yytext);return INT_TYPE;}
-"float" {yylval.string = strdup(yytext);return FLOAT_TYPE;}
-"char" {yylval.string = strdup(yytext);return CHAR_TYPE;}
-"string" {yylval.string = strdup(yytext);return STRING_TYPE;}
-"bool" {yylval.string = strdup(yytext);return BOOL_TYPE;}
+"int" {yylval.type = INT;return INT_TYPE;}
+"float" {yylval.type = FLOAT;return FLOAT_TYPE;}
+"char" {yylval.type = CHAR;return CHAR_TYPE;}
+"string" {yylval.type = STRING;return STRING_TYPE;}
+"bool" {yylval.type = BOOL;return BOOL_TYPE;}
+"struct" {yylval.type = USER_STRUCT; return USER_STRUCT;}
 
 "const" {return CONST;}
 "array" {return ARRAY;}
 "begin" {return BGIN;}
 "end"   {return END;}
 
-"struct"    {return USER_STRUCT;}
 "print"     {return PRINT;}
 "if"        {return IF;}
 "else"      {return ELSE;}

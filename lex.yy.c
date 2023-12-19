@@ -370,11 +370,11 @@ static const flex_int16_t yy_accept[109] =
        19,    0,   19,   23,   27,   24,   29,   18,   18,   18,
        18,   18,   18,   15,   18,   18,   18,   18,   18,   12,
        18,   18,   18,   18,   18,   31,   22,   21,   20,   18,
-       18,   18,   18,   18,   18,    9,   18,   18,   16,    1,
+       18,   18,   18,   18,   18,   10,   18,   18,   16,    1,
        18,   18,   18,   18,   18,   18,    5,    3,   18,   13,
-       18,   18,   18,   18,   18,   17,   18,    7,    8,    6,
+       18,   18,   18,   18,   18,   17,   18,    8,    9,    7,
 
-        2,   11,   18,   18,   14,    4,   10,    0
+        2,   11,   18,   18,   14,    4,    6,    0
     } ;
 
 static const YY_CHAR yy_ec[256] =
@@ -802,52 +802,52 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 YY_RULE_SETUP
 #line 12 "limbaj.l"
-{yylval.string = strdup(yytext);return INT_TYPE;}
+{yylval.type = INT;return INT_TYPE;}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
 #line 13 "limbaj.l"
-{yylval.string = strdup(yytext);return FLOAT_TYPE;}
+{yylval.type = FLOAT;return FLOAT_TYPE;}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
 #line 14 "limbaj.l"
-{yylval.string = strdup(yytext);return CHAR_TYPE;}
+{yylval.type = CHAR;return CHAR_TYPE;}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
 #line 15 "limbaj.l"
-{yylval.string = strdup(yytext);return STRING_TYPE;}
+{yylval.type = STRING;return STRING_TYPE;}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
 #line 16 "limbaj.l"
-{yylval.string = strdup(yytext);return BOOL_TYPE;}
+{yylval.type = BOOL;return BOOL_TYPE;}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 18 "limbaj.l"
-{return CONST;}
+#line 17 "limbaj.l"
+{yylval.type = USER_STRUCT; return USER_STRUCT;}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
 #line 19 "limbaj.l"
-{return ARRAY;}
+{return CONST;}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
 #line 20 "limbaj.l"
-{return BGIN;}
+{return ARRAY;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
 #line 21 "limbaj.l"
-{return END;}
+{return BGIN;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 23 "limbaj.l"
-{return USER_STRUCT;}
+#line 22 "limbaj.l"
+{return END;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
