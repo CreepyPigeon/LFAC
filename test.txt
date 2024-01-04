@@ -1,12 +1,12 @@
 struct myStruct {
-    int x;
-    float y;
     char z;
 };
-myStruct x;
+struct Test{
+    myStruct a;
+    int x;
+};
 float abc;
 array[int,5] myArr;
 begin
-    x:=3-55;
-    y:=3+4*5;
+    y:=3;
 end
