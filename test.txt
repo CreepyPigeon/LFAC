@@ -1,11 +1,15 @@
 struct myStruct {
     char z;
+    array[int,5] te;
 };
 struct Test{
     myStruct a;
     int x;
 };
-float abc;
+int c;
+float abc := c;
+int x;
+char abd;
 array[int,5] myArr;
 begin
     y:=3;

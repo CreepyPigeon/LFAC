@@ -16,7 +16,7 @@ extern int yylex();
 void yyerror(const char * s);
 bool searchClasses(char* className);
 Variable searchForClass(char* className);
-bool searchForVariable(char* varName,vector<Variable> searchLocation);
+int searchForVariable(char* varName,vector<Variable> searchLocation);
 const char* typeToString(int type);
 
 struct Variable* currentVariable;
@@ -29,6 +29,7 @@ void increaseScope(){
 }
 void decreaseScope(){
      scope--;
+     //REMOVE ALL VARIABLES FROM SCOPE
 }
 
 %}
@@ -41,7 +42,7 @@ void decreaseScope(){
      bool bool_val;
      char char_val;
      struct Variable* variable;
-     struct Expression* expr;
+     struct Ast* ast;
 }
 %token CONST ARRAY BGIN END WHILE FOR IF ELSE DO PRINT EVAL TYPEOF
 %token<string> ID
@@ -64,7 +65,7 @@ void decreaseScope(){
 %token<bool_val> BOOL
 
 %type <type> TYPE;
-%type <expr> EXPR;
+%type <ast> EXPR;
 %type <variable> struct_var;
 
 %start progr
@@ -89,7 +90,7 @@ struct_decl : USER_STRUCT ID {
                     strcpy(currentVariable->typeName, $2);
                } struct_vars_block {
                     classDefinitions.push_back(*currentVariable);
-                    debugPrint(*currentVariable);
+                    //debugPrint(*currentVariable);
                     currentVariable = NULL;
                }
                ;
@@ -99,7 +100,7 @@ struct_vars : struct_var ';' {currentVariable->structVars.push_back(*$1);}
                | struct_vars struct_var ';' {currentVariable->structVars.push_back(*$2);}
                ;
 struct_var : TYPE ID {
-                         if(searchForVariable($2,currentVariable->structVars)){
+                         if(searchForVariable($2,currentVariable->structVars)>-1){
                               yyerror("member with this name already declared");
                               return 0;
                          }
@@ -107,11 +108,11 @@ struct_var : TYPE ID {
                          strcpy($$->typeName, typeToString($1));
                     }
                | ID ID {
-                    if(searchForVariable($2,currentVariable->structVars)){
+                    if(searchForVariable($2,currentVariable->structVars)>-1){
                          yyerror("member with this name already declared");
                          return 0;
                     }
-                    if(searchClasses($1) == 0){
+                    if(!searchClasses($1)){
                          yyerror("type with this name does not exist");
                          return 0;
                     }
@@ -128,6 +129,7 @@ struct_var : TYPE ID {
                     $$ = new Variable;
                     $$->isArray = true;
                     $$->type = $3;
+                    strcpy($$->typeName, typeToString($3));
                     //$$->arraySize = $5;
                     strcpy($$->name, $7);
                }// Arrays 
@@ -135,9 +137,74 @@ struct_var : TYPE ID {
 global_vars : global_decl ';'
           | global_vars global_decl ';'
           ;
-global_decl : TYPE ID                             // int x
-               | TYPE ID ASSIGN EXPR              // int x := 5
-               | TYPE ID ASSIGN ID                // int x := y
+global_decl : TYPE ID{
+                    if(searchForVariable($2,declaredVariables)>-1){
+                         yyerror("variable with this name already declared");
+                         return 0;
+                    }
+                    struct Variable* var = new Variable; 
+                    strcpy(var->name, $2);
+                    var->type = $1; 
+                    strcpy(var->typeName, typeToString($1));
+                    var->scope = scope;
+                    //debugPrintVar(*var);
+                    declaredVariables.push_back(*var);
+               }// int x
+               | TYPE ID ASSIGN EXPR{
+                    if(searchForVariable($2,declaredVariables)>-1){
+                         yyerror("variable with this name already declared");
+                         return 0;
+                    }
+                    struct Variable* var = new Variable; 
+                    strcpy(var->name, $2);
+                    var->type = $1; 
+                    strcpy(var->typeName, typeToString($1));
+                    var->scope = scope;
+
+                    //TO-DO: ASSIGN EXPR
+
+                    //debugPrintVar(*var);
+                    declaredVariables.push_back(*var);
+               }// int x := 5
+               | TYPE ID ASSIGN ID{
+                    if(searchForVariable($2,declaredVariables)>-1){
+                         yyerror("variable with this name already declared");
+                         return 0;
+                    }
+                    int other_var = searchForVariable($4,declaredVariables);
+                    if(other_var==-1){
+                         yyerror("variable with this name not declared");
+                         return 0;
+                    }
+                    struct Variable* var = new Variable; 
+                    strcpy(var->name, $2);
+                    var->type = $1; 
+                    if(var->type != declaredVariables[other_var].type){
+                         yyerror("variable types do not match");
+                         return 0;
+                    }
+                    strcpy(var->typeName, typeToString($1));
+                    var->scope = scope;
+                    switch($1){
+                         case 0:
+                              var->int_val = declaredVariables[other_var].int_val;
+                              break;
+                         case 1:
+                              var->float_val = declaredVariables[other_var].float_val;
+                              break;
+                         case 2:
+                              var->bool_val = declaredVariables[other_var].bool_val;
+                              break;
+                         case 3:
+                              var->char_val = declaredVariables[other_var].char_val;
+                              break;
+                         case 4:
+                              strcpy(var->string, declaredVariables[other_var].string);
+                              break;
+                    }
+                    //debugPrintVar(*var);
+                    declaredVariables.push_back(*var);
+               }// int x := y
                | ID ID                            // MyStruct x; - primul ID e clasa, a doilea ID e numele variabilei
                | ARRAY '[' TYPE ',' EXPR ']' ID    // Arrays; am gandit arrays ca fiind
                                                        // array[int,5] myArray; - asta e un exemplu
@@ -159,7 +226,6 @@ list :  statement ';'
 
 statement: ID ASSIGN ID
          | ID ASSIGN EXPR
-         | ID ASSIGN 
          ;
 
 // PLACEHOLDER
@@ -213,14 +279,14 @@ Variable searchForClass(char* className){
      return Variable{0};
 }
 
-bool searchForVariable(char* varName,vector<Variable> searchLocation){
+int searchForVariable(char* varName,vector<Variable> searchLocation){
      string varNameStr = varName;
      for(int i = 0; i < searchLocation.size(); i++){
           string toCompareStr = searchLocation[i].name;
           if(varNameStr == toCompareStr)
-               return true;
+               return i;
      }
-     return false;
+     return -1;
 }
 
 int main(int argc, char** argv){

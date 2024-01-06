@@ -14,6 +14,24 @@ using namespace std;
 //      USER_STRUCT = 5
 // };
 
+enum Operation{
+     Add,
+     Sub,
+     Mul,
+     Div,
+     Mod,
+     Assign,
+     Equal,
+     NotEqual,
+     Lt,
+     Gt,
+     Lte,
+     Gte,
+     And,
+     Or,
+     Not,
+};
+
 struct Variable{
      int type;
      char name[30];
@@ -21,6 +39,7 @@ struct Variable{
      bool isConst;
      bool isArray;
      bool isInit;
+     int scope;
      union {
           char* string;
           int int_val;
@@ -44,8 +63,18 @@ void debugPrint(Variable var){
      }
 }
 
-struct Expr{
+void debugPrintVar(Variable var){
+     cout << var.name << " of type " << var.typeName << endl;
+     cout << "isConst: " << var.isConst << endl;
+     cout << "isArray: " << var.isArray << endl;
+     cout << "isInit: " << var.isInit << endl;
+     cout << "scope: " << var.scope << endl;
+     cout << "arraySize: " << var.arraySize << endl;
+}
+struct Ast{
      int type;
+     int isConst;
+     Operation operand;
      union {
           char* string;
           int int_val;
@@ -53,6 +82,8 @@ struct Expr{
           bool bool_val;
           char char_val;
      };
+     Ast* left;
+     Ast* right;
 };
 
 

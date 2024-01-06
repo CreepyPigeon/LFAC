@@ -86,7 +86,7 @@ extern int yylex();
 void yyerror(const char * s);
 bool searchClasses(char* className);
 Variable searchForClass(char* className);
-bool searchForVariable(char* varName,vector<Variable> searchLocation);
+int searchForVariable(char* varName,vector<Variable> searchLocation);
 const char* typeToString(int type);
 
 struct Variable* currentVariable;
@@ -531,7 +531,7 @@ union yyalloc
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  17
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  41
+#define YYNRULES  40
 /* YYNSTATES -- Number of states.  */
 #define YYNSTATES  108
 
@@ -587,10 +587,10 @@ static const yytype_int8 yytranslate[] =
 static const yytype_uint8 yyrline[] =
 {
        0,    73,    73,    78,    79,    80,    82,    82,    96,    98,
-      99,   101,   109,   127,   135,   136,   138,   139,   140,   141,
-     142,   144,   148,   148,   150,   151,   152,   153,   154,   155,
-     156,   157,   157,   160,   161,   162,   166,   168,   169,   170,
-     171,   172
+      99,   101,   109,   127,   136,   137,   139,   152,   165,   204,
+     205,   207,   211,   211,   213,   214,   215,   216,   217,   218,
+     219,   220,   220,   223,   224,   228,   230,   231,   232,   233,
+     234
 };
 #endif
 
@@ -658,12 +658,12 @@ static const yytype_int8 yypact[] =
 static const yytype_int8 yydefact[] =
 {
        5,     0,     0,     0,     0,     6,     1,     0,     0,     0,
-      37,    38,    39,    40,    41,     0,     0,     0,     0,     3,
+      36,    37,    38,    39,    40,     0,     0,     0,     0,     3,
        0,     0,     0,    19,     4,    22,     0,     2,    14,    16,
        0,     7,     0,     0,     0,    15,     0,     0,     0,     0,
-       0,     0,    36,    21,     0,     0,     0,     0,     0,     0,
+       0,     0,    35,    21,     0,     0,     0,     0,     0,     0,
       31,     0,     0,    18,    17,     0,    12,     8,     0,     9,
-      11,     0,     0,     0,     0,     0,    35,     0,    23,     0,
+      11,     0,     0,     0,     0,     0,     0,     0,    23,     0,
       24,     0,    10,     0,     0,     0,     0,     0,    33,    34,
        0,    25,     0,    20,     0,     0,     0,     0,    32,     0,
        0,     0,     0,     0,     0,    27,     0,     0,    28,     0,
@@ -746,8 +746,8 @@ static const yytype_int8 yyr1[] =
        0,    50,    51,    52,    52,    52,    54,    53,    55,    56,
       56,    57,    57,    57,    58,    58,    59,    59,    59,    59,
       59,    59,    61,    60,    62,    62,    62,    62,    62,    62,
-      62,    63,    62,    64,    64,    64,    65,    66,    66,    66,
-      66,    66
+      62,    63,    62,    64,    64,    65,    66,    66,    66,    66,
+      66
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
@@ -756,8 +756,8 @@ static const yytype_int8 yyr2[] =
        0,     2,     3,     2,     3,     0,     0,     4,     3,     2,
        3,     2,     2,     7,     2,     3,     2,     4,     4,     2,
        7,     4,     0,     4,     2,     3,    10,     6,     6,     8,
-       7,     0,     4,     3,     3,     2,     1,     1,     1,     1,
-       1,     1
+       7,     0,     4,     3,     3,     1,     1,     1,     1,     1,
+       1
 };
 
 
@@ -1246,7 +1246,7 @@ yyreduce:
 #line 90 "limbaj.y"
                                    {
                     classDefinitions.push_back(*currentVariable);
-                    debugPrint(*currentVariable);
+                    //debugPrint(*currentVariable);
                     currentVariable = NULL;
                }
 #line 1253 "limbaj.tab.c"
@@ -1267,7 +1267,7 @@ yyreduce:
   case 11: /* struct_var: TYPE ID  */
 #line 101 "limbaj.y"
                      {
-                         if(searchForVariable((yyvsp[0].string),currentVariable->structVars)){
+                         if(searchForVariable((yyvsp[0].string),currentVariable->structVars)>-1){
                               yyerror("member with this name already declared");
                               return 0;
                          }
@@ -1280,11 +1280,11 @@ yyreduce:
   case 12: /* struct_var: ID ID  */
 #line 109 "limbaj.y"
                        {
-                    if(searchForVariable((yyvsp[0].string),currentVariable->structVars)){
+                    if(searchForVariable((yyvsp[0].string),currentVariable->structVars)>-1){
                          yyerror("member with this name already declared");
                          return 0;
                     }
-                    if(searchClasses((yyvsp[-1].string)) == 0){
+                    if(!searchClasses((yyvsp[-1].string))){
                          yyerror("type with this name does not exist");
                          return 0;
                     }
@@ -1306,38 +1306,119 @@ yyreduce:
                     (yyval.variable) = new Variable;
                     (yyval.variable)->isArray = true;
                     (yyval.variable)->type = (yyvsp[-4].type);
+                    strcpy((yyval.variable)->typeName, typeToString((yyvsp[-4].type)));
                     //$$->arraySize = $5;
                     strcpy((yyval.variable)->name, (yyvsp[0].string));
                }
-#line 1313 "limbaj.tab.c"
+#line 1314 "limbaj.tab.c"
+    break;
+
+  case 16: /* global_decl: TYPE ID  */
+#line 139 "limbaj.y"
+                     {
+                    if(searchForVariable((yyvsp[0].string),declaredVariables)>-1){
+                         yyerror("variable with this name already declared");
+                         return 0;
+                    }
+                    struct Variable* var = new Variable; 
+                    strcpy(var->name, (yyvsp[0].string));
+                    var->type = (yyvsp[-1].type); 
+                    strcpy(var->typeName, typeToString((yyvsp[-1].type)));
+                    var->scope = scope;
+                    //debugPrintVar(*var);
+                    declaredVariables.push_back(*var);
+               }
+#line 1332 "limbaj.tab.c"
+    break;
+
+  case 17: /* global_decl: TYPE ID ASSIGN EXPR  */
+#line 152 "limbaj.y"
+                                    {
+                    if(searchForVariable((yyvsp[-2].string),declaredVariables)>-1){
+                         yyerror("variable with this name already declared");
+                         return 0;
+                    }
+                    struct Variable* var = new Variable; 
+                    strcpy(var->name, (yyvsp[-2].string));
+                    var->type = (yyvsp[-3].type); 
+                    strcpy(var->typeName, typeToString((yyvsp[-3].type)));
+                    var->scope = scope;
+                    //debugPrintVar(*var);
+                    declaredVariables.push_back(*var);
+               }
+#line 1350 "limbaj.tab.c"
+    break;
+
+  case 18: /* global_decl: TYPE ID ASSIGN ID  */
+#line 165 "limbaj.y"
+                                  {
+                    if(searchForVariable((yyvsp[-2].string),declaredVariables)>-1){
+                         yyerror("variable with this name already declared");
+                         return 0;
+                    }
+                    int other_var = searchForVariable((yyvsp[0].string),declaredVariables);
+                    if(other_var==-1){
+                         yyerror("variable with this name not declared");
+                         return 0;
+                    }
+                    struct Variable* var = new Variable; 
+                    strcpy(var->name, (yyvsp[-2].string));
+                    var->type = (yyvsp[-3].type); 
+                    if(var->type != declaredVariables[other_var].type){
+                         yyerror("variable types do not match");
+                         return 0;
+                    }
+                    strcpy(var->typeName, typeToString((yyvsp[-3].type)));
+                    var->scope = scope;
+                    switch((yyvsp[-3].type)){
+                         case 0:
+                              var->int_val = declaredVariables[other_var].int_val;
+                              break;
+                         case 1:
+                              var->float_val = declaredVariables[other_var].float_val;
+                              break;
+                         case 2:
+                              var->bool_val = declaredVariables[other_var].bool_val;
+                              break;
+                         case 3:
+                              var->char_val = declaredVariables[other_var].char_val;
+                              break;
+                         case 4:
+                              strcpy(var->string, declaredVariables[other_var].string);
+                              break;
+                    }
+                    //debugPrintVar(*var);
+                    declaredVariables.push_back(*var);
+               }
+#line 1394 "limbaj.tab.c"
     break;
 
   case 22: /* $@2: %empty  */
-#line 148 "limbaj.y"
+#line 211 "limbaj.y"
                {increaseScope();}
-#line 1319 "limbaj.tab.c"
+#line 1400 "limbaj.tab.c"
     break;
 
   case 23: /* program: BGIN $@2 list END  */
-#line 148 "limbaj.y"
+#line 211 "limbaj.y"
                                            {decreaseScope();}
-#line 1325 "limbaj.tab.c"
+#line 1406 "limbaj.tab.c"
     break;
 
   case 31: /* $@3: %empty  */
-#line 157 "limbaj.y"
+#line 220 "limbaj.y"
            {increaseScope();}
-#line 1331 "limbaj.tab.c"
+#line 1412 "limbaj.tab.c"
     break;
 
   case 32: /* list: '{' $@3 list '}'  */
-#line 157 "limbaj.y"
+#line 220 "limbaj.y"
                                        {decreaseScope();}
-#line 1337 "limbaj.tab.c"
+#line 1418 "limbaj.tab.c"
     break;
 
 
-#line 1341 "limbaj.tab.c"
+#line 1422 "limbaj.tab.c"
 
       default: break;
     }
@@ -1530,7 +1611,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 174 "limbaj.y"
+#line 236 "limbaj.y"
 
 void yyerror(const char * s){
      printf("error: %s at line:%d\n",s,yylineno);
@@ -1573,14 +1654,14 @@ Variable searchForClass(char* className){
      return Variable{0};
 }
 
-bool searchForVariable(char* varName,vector<Variable> searchLocation){
+int searchForVariable(char* varName,vector<Variable> searchLocation){
      string varNameStr = varName;
      for(int i = 0; i < searchLocation.size(); i++){
           string toCompareStr = searchLocation[i].name;
           if(varNameStr == toCompareStr)
-               return true;
+               return i;
      }
-     return false;
+     return -1;
 }
 
 int main(int argc, char** argv){

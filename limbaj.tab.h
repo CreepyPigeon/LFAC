@@ -105,7 +105,7 @@ union YYSTYPE
      bool bool_val;
      char char_val;
      struct Variable* variable;
-     struct Expression* expr;
+     struct Ast* ast;
 
 #line 111 "limbaj.tab.h"
 
