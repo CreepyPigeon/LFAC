@@ -3,48 +3,17 @@
 #include <vector>
 #include <string>
 #include <cstring>
-#include "IdList.h"
+#include "utility.h"
 
 using namespace std;
-
-extern FILE* yyin;
-extern char* yytext;
-extern int yylineno;
-
-extern int yylex();
-
-void yyerror(const char * s);
-bool searchClasses(char* className);
-Variable searchForClass(char* className);
-int searchForVariable(char* varName,vector<Variable> searchLocation);
-const char* typeToString(int type);
-int searchForFunction(char* funcName);
-bool buildAST(Ast* &root, Ast* left, Ast* right, Operation op);
-void printExpr(Ast* expr);
-void evalAST(Ast* &root);
 
 struct Variable* currentVariable;
 struct Function* currentFunction;
 struct Func_Params* currentFuncParams;
 
-int scope = 0;
 vector<Variable> classDefinitions;
 vector<Variable> declaredVariables;
 vector<Function> declaredFunctions;
-
-void increaseScope(){
-     scope++;
-}
-void decreaseScope(){
-     for(int i = 0; i < declaredVariables.size(); i++){
-          if(declaredVariables[i].scope == scope){
-               declaredVariables.erase(declaredVariables.begin()+i);
-               i--;
-          }
-     }
-     scope--;
-     //REMOVE ALL VARIABLES FROM SCOPE
-}
 
 %}
 
@@ -60,10 +29,10 @@ void decreaseScope(){
      struct Function* function;
      struct Func_Params* func_param;
 }
+
 %token CONST ARRAY BGIN END WHILE FOR IF ELSE DO PRINT EVAL TYPEOF RETURN
 %token<string> ID
 %token<type> INT_TYPE FLOAT_TYPE CHAR_TYPE STRING_TYPE BOOL_TYPE USER_STRUCT
-
 
 %right ASSIGN 
 %nonassoc EQ NEQ 
@@ -87,10 +56,10 @@ void decreaseScope(){
 %type <ast> EXPR;
 %type <variable> struct_var;
 %type <func_param> func_decl_list;
-%type <func_param> FUNC_LIST;
+%type <func_param> func_list;
 %type <variable> func_param;
 %type <variable> var_access;
-%type <function> FUNC_CALL;
+%type <function> func_call;
 
 %start progr
 
@@ -127,12 +96,11 @@ struct_decl : USER_STRUCT ID {
                          yyerror("struct with this name already declared");
                          return 0;
                     }
-                    currentVariable = new Variable;
-                    currentVariable->type = $1;
+                    newVar(currentVariable, $1, $2,false, false, false, scope);
                     strcpy(currentVariable->typeName, $2);
                } struct_vars_block {
                     classDefinitions.push_back(*currentVariable);
-                    //debugPrint(*currentVariable);
+                    debugPrintVar(*currentVariable);
                     currentVariable = NULL;
                }
                ;
@@ -146,8 +114,7 @@ struct_var : TYPE ID {
                               yyerror("member with this name already declared");
                               return 0;
                          }
-                         $$ = new Variable; $$->type = $1; strcpy($$->name, $2);
-                         strcpy($$->typeName, typeToString($1));
+                         newVar($$, $1, $2,false, false, false, scope);
                     }
                | ID ID {
                     if(searchForVariable($2,currentVariable->structVars)>-1){
@@ -158,25 +125,19 @@ struct_var : TYPE ID {
                          yyerror("type with this name does not exist");
                          return 0;
                     }
-                    $$ = new Variable;
+                    newVar($$,5,$2,false,false,false,scope);
                     // Stim sigur ca o sa gasim clasa, deoarece am verificat daca exista
                     struct Variable temp = searchForClass($1);
-                    $$->structVars = temp.structVars;
-                    $$->type = 5;
-                    //debugPrint(*$$);
                     strcpy($$->typeName, $1);
-                    strcpy($$->name, $2);
+                    $$->structVars = temp.structVars;
                }// Custom classes
-               | ARRAY '[' TYPE ',' EXPR ']' ID {
-                    $$ = new Variable;
-                    $$->isArray = true;
-                    $$->type = $3;
-                    strcpy($$->typeName, typeToString($3));
+               | ARRAY '[' TYPE ';' EXPR ']' ID {
                     evalAST($5);
                     if($5->type != 0){
                          yyerror("array size must be an integer");
                          return 0;
                     }
+                    newVar($$, $3, $7,false, true, false, scope);
                     $$->arraySize = $5->int_val;
                     for(int i = 0; i < $$->arraySize; i++){
                          struct Variable* temp = new Variable;
@@ -184,17 +145,24 @@ struct_var : TYPE ID {
                          strcpy(temp->typeName, typeToString($3));
                          $$->arrayElements.push_back(*temp);
                     }
-                    strcpy($$->name, $7);
                }// Arrays 
                ;
 
 
 // FUNCTION DECLARATIONS
-functions: func_decl {declaredFunctions.push_back(*currentFunction);currentFunction = NULL;}
-         | functions func_decl {declaredFunctions.push_back(*currentFunction);currentFunction = NULL;}
+functions: func_decl {
+               declaredFunctions.push_back(*currentFunction);
+               debugPrintFunc(*currentFunction);
+               currentFunction = NULL;
+          }
+         | functions func_decl {
+               declaredFunctions.push_back(*currentFunction);
+               debugPrintFunc(*currentFunction);
+               currentFunction = NULL;
+          }
          ;
 
-func_decl : TYPE ID '(' {currentFuncParams = new Func_Params;} {increaseScope();} func_decl_list ')' '{' list RETURN EXPR ';' '}' {
+func_decl : TYPE ID '(' {currentFuncParams = new Func_Params;} {increaseScope($2);} func_decl_list ')' '{' list RETURN EXPR ';' '}' {
                decreaseScope();
                if(searchForFunction($2)>-1){
                     yyerror("function with this name already declared");
@@ -210,7 +178,7 @@ func_decl : TYPE ID '(' {currentFuncParams = new Func_Params;} {increaseScope();
                     return 0;
                }
           }
-          | TYPE ID '(' ')' '{' {increaseScope();} list RETURN EXPR ';' '}' {
+          | TYPE ID '(' ')' '{' {increaseScope($2);} list RETURN EXPR ';' '}' {
                decreaseScope();
                if(searchForFunction($2)>-1){
                     yyerror("function with this name already declared");
@@ -243,18 +211,18 @@ func_decl_list : func_param {
                }
                ;
 
-func_param : TYPE ID {$$ = new Variable; $$->type = $1; $$->scope = scope ;strcpy($$->name, $2); strcpy($$->typeName, typeToString($1));}
+func_param : TYPE ID {
+               newVar($$, $1, $2,false, false, false, scope);
+          }
            | ID ID {$$ = new Variable; if(!searchClasses($1)){
                          yyerror("type with this name does not exist");
                          return 0;
                     }
+                    newVar($$,5,$2,false,false,false,scope);
                     struct Variable temp = searchForClass($1);
                     $$->structVars = temp.structVars;
-                    $$->type = 5;
-                    $$->scope = scope;
                     //debugPrint(*$$);
                     strcpy($$->typeName, $1);
-                    strcpy($$->name, $2);
                }
            ;
 
@@ -268,12 +236,9 @@ var_decl : TYPE ID{
                          yyerror("variable with this name already declared");
                          return 0;
                     }
-                    struct Variable* var = new Variable; 
-                    strcpy(var->name, $2);
-                    var->type = $1; 
-                    strcpy(var->typeName, typeToString($1));
-                    var->scope = scope;
-                    //debugPrintVar(*var);
+                    struct Variable* var = new Variable;
+                    newVar(var, $1, $2,false, false, false, scope);
+                    debugPrintVarDetailed(*var);
                     declaredVariables.push_back(*var);
                }// int x
                | TYPE ID ASSIGN EXPR{
@@ -283,10 +248,7 @@ var_decl : TYPE ID{
                     }
                     struct Variable* var = new Variable; 
                     evalAST($4);
-                    strcpy(var->name, $2);
-                    var->type = $1; 
-                    strcpy(var->typeName, typeToString($1));
-                    var->scope = scope;
+                    newVar(var, $1, $2,false, false, true, scope);
                     if(var->type != $4->type){
                          yyerror("variable types do not match");
                          return 0;
@@ -308,7 +270,7 @@ var_decl : TYPE ID{
                               strcpy(var->string, $4->string);
                               break;
                     }
-                    //debugPrintVar(*var);
+                    debugPrintVarDetailed(*var);
                     declaredVariables.push_back(*var);
                }// int x := 5
                /* | TYPE ID ASSIGN ID{
@@ -368,38 +330,32 @@ var_decl : TYPE ID{
                          return 0;
                     }
                     struct Variable* var = new Variable;
+                    newVar(var,5,$2,false,false,false,scope);
                     struct Variable temp = searchForClass($1);
-                    var->structVars = temp.structVars;
-                    var->type = 5;
                     strcpy(var->typeName, $1);
-                    strcpy(var->name, $2);
-                    var->scope = scope;
-                    //debugPrintVar(*var);
+                    debugPrintVarDetailed(*var);
                     declaredVariables.push_back(*var);
                }// MyStruct x; - primul ID e clasa, a doilea ID e numele variabilei
-               | ARRAY '[' TYPE ',' EXPR ']' ID{
+               | ARRAY '[' TYPE ';' EXPR ']' ID{
                     if(searchForVariable($7,declaredVariables)>-1){
                          yyerror("variable with this name already declared");
                          return 0;
                     }
                     struct Variable* var = new Variable;
-                    var->isArray = true;
-                    var->type = $3;
-                    strcpy(var->typeName, typeToString($3));
+                    newVar(var, $3, $7,false, true, false, scope);
                     evalAST($5);
                     if($5->type != 0){
                          yyerror("array size must be an integer");
                          return 0;
                     }
                     var->arraySize = $5->int_val;
-                    strcpy(var->name, $7);
-                    var->scope = scope;
                     for(int i = 0; i < var->arraySize; i++){
                          struct Variable* temp = new Variable;
-                         temp->type = $3;
-                         strcpy(temp->typeName, typeToString($3));
+                         char name[]="";
+                         newVar(temp, $3,name,false, false, false, scope);
                          var->arrayElements.push_back(*temp);
                     }
+                    debugPrintVarDetailed(*var);
                     declaredVariables.push_back(*var);
                }// Arrays; am gandit arrays ca fiind
                 // array[int,5] myArray; - asta e un exemplu
@@ -409,13 +365,7 @@ var_decl : TYPE ID{
                          return 0;
                     }
                     struct Variable* var = new Variable; 
-                    strcpy(var->name, $3);
-                    var->type = $2; 
-                    strcpy(var->typeName, typeToString($2));
-                    var->scope = scope;
-                    var->isConst = true;
-                    var->isInit = true;
-
+                    newVar(var, $2, $3,true, false, true, scope);
                     evalAST($5);
                     if(var->type != $5->type){
                          yyerror("variable types do not match");
@@ -438,12 +388,12 @@ var_decl : TYPE ID{
                               strcpy(var->string, $5->string);
                               break;
                     }
-                    //debugPrintVar(*var);
+                    debugPrintVarDetailed(*var);
                     declaredVariables.push_back(*var);
                }// const int x := 5
                ;
 
-program : BGIN {increaseScope();} list END {decreaseScope();}  
+program : BGIN {char newScope[] = "main";increaseScope(newScope);} list END {decreaseScope();}  
      ;
 list : statement 
      | list statement 
@@ -480,14 +430,15 @@ statement : var_access ASSIGN EXPR ';'{
                          strcpy($1->string, $3->string);
                          break;
                }
+               debugPrintVarDetailed(*$1);
           }
-          | FUNC_CALL ';'
-          | '{' {increaseScope();} list '}' {decreaseScope();}
-          | FOR '(' var_access ASSIGN EXPR ';' EXPR ';' EXPR ')' '{' {increaseScope();} list '}' {decreaseScope();}
-          | WHILE '(' EXPR ')' statement
-          | IF '(' EXPR ')'  statement %prec NOELSE
-          | IF '(' EXPR ')'  statement ELSE statement
-          | DO statement WHILE '(' EXPR ')' ';'
+          | func_call
+          | '{' {char newScope[100]; sprintf(newScope,"scop %d",scope);increaseScope(newScope);} list '}' {decreaseScope();}
+          | FOR '(' var_access ASSIGN EXPR ';' EXPR ';' EXPR ')' '{' {char newScope[] = "for";increaseScope(newScope);} list '}' {decreaseScope();}
+          | WHILE '(' EXPR ')' '{' {char newScope[] = "while";increaseScope(newScope);} list '}' {decreaseScope();}
+          | IF '(' EXPR ')' statement %prec NOELSE
+          | IF '(' EXPR ')' statement ELSE statement
+          | DO '{' {char newScope[] = "do-while";increaseScope(newScope);} list '}' {decreaseScope();} WHILE '(' EXPR ')' ';'
           | PRINT '(' EXPR ')' ';' {
                evalAST($3);
                if($3->type == 5){
@@ -513,7 +464,7 @@ statement : var_access ASSIGN EXPR ';'{
           | var_decl ';'
           ;
 
-FUNC_CALL : ID  { currentFuncParams = new Func_Params; }'(' FUNC_LIST ')' {
+func_call : ID  { currentFuncParams = new Func_Params; }'(' func_list ')' {
                int func_location = searchForFunction($1);
                if(func_location==-1){
                     yyerror("function with this name not declared");
@@ -533,18 +484,19 @@ FUNC_CALL : ID  { currentFuncParams = new Func_Params; }'(' FUNC_LIST ')' {
           }
           ;
 
-FUNC_LIST : EXPR {
+func_list : EXPR {
                struct Variable* var = new Variable;
                var->type = $1->type;
                strcpy(var->typeName, $1->typeName);
                currentFuncParams->params.push_back(*var);
           }
-          | FUNC_LIST ',' EXPR {
+          | func_list ',' EXPR {
                struct Variable* var = new Variable;
                var->type = $3->type;
                strcpy(var->typeName, $3->typeName);
                currentFuncParams->params.push_back(*var);
           } 
+          | {}// Altfel nu putem apela functii fara parametrii
           ;
 
 var_access : ID {
@@ -633,8 +585,8 @@ EXPR : EXPR '+' EXPR {if(!buildAST($$, $1, $3, Add)) return 0;}
      | EXPR OR EXPR  {if(!buildAST($$, $1, $3, Or)) return 0;}
      | NOT EXPR      {if(!buildAST($$, $2, NULL, Not)) return 0;}
      | '-' EXPR      {if(!buildAST($$, $2, NULL, Sub)) return 0;}
-     | FUNC_CALL     {   
-                         $$ = new Ast; $$->left = nullptr; $$->right = nullptr; $$->type = $1->type; strcpy($$->typeName, $1->typeName);
+     | func_call     {   
+                         newAST($$, $1->type,nullptr,nullptr, None);
                          switch($1->type){
                          case 0:
                               $$->int_val = 0;
@@ -655,14 +607,13 @@ EXPR : EXPR '+' EXPR {if(!buildAST($$, $1, $3, Add)) return 0;}
                               yyerror("cannot assign struct to variable");
                               break;
                          }
-                         $$->operand = None;
                     }
      | '(' EXPR ')'  {$$ = $2;}
-     | INT_NR        {$$ = new Ast; $$->left = nullptr; $$->right = nullptr; $$->type = 0; strcpy($$->typeName, typeToString($$->type)) ;$$->int_val = $1;$$->operand = None;}
-     | FLOAT_NR      {$$ = new Ast; $$->left = nullptr; $$->right = nullptr; $$->type = 1; strcpy($$->typeName, typeToString($$->type)) ;$$->float_val = $1;$$->operand = None;}
-     | BOOL          {$$ = new Ast; $$->left = nullptr; $$->right = nullptr; $$->type = 2; strcpy($$->typeName, typeToString($$->type)) ;$$->bool_val = $1;$$->operand = None;}
-     | CHAR          {$$ = new Ast; $$->left = nullptr; $$->right = nullptr; $$->type = 3; strcpy($$->typeName, typeToString($$->type)) ;$$->char_val = $1;$$->operand = None;}
-     | STRING        {$$ = new Ast; $$->left = nullptr; $$->right = nullptr; $$->type = 4; strcpy($$->typeName, typeToString($$->type)) ;strcpy($$->string,$1);strcat($$->string,"");$$->operand = None;}
+     | INT_NR        {newAST($$,0,nullptr,nullptr,None);$$->int_val = $1;}
+     | FLOAT_NR      {newAST($$,1,nullptr,nullptr,None);$$->float_val = $1;}
+     | BOOL          {newAST($$,2,nullptr,nullptr,None);$$->bool_val = $1;}
+     | CHAR          {newAST($$,3,nullptr,nullptr,None);$$->char_val = $1;}
+     | STRING        {newAST($$,4,nullptr,nullptr,None);strcpy($$->string, $1);}
      | var_access    {
                          $$ = new Ast; $$->left = nullptr; $$->right = nullptr; $$->type = $1->type; strcpy($$->typeName, $1->typeName);
                          if($1->isArray){
@@ -701,372 +652,9 @@ TYPE : INT_TYPE
      | BOOL_TYPE
      ;
 %%
-void yyerror(const char * s){
-     printf("error: %s at line:%d\n",s,yylineno);
-}
 
-const char* typeToString(int type){
-     switch(type){
-          case 0:
-               return "int";
-          case 1:
-               return "float";
-          case 2:
-               return "bool";
-          case 3:
-               return "char";
-          case 4:
-               return "string";
-          default:
-               return "unknown";
-     }
-}
-
-bool searchClasses(char* className){
-     string classNameStr = className;
-     for(int i = 0; i < classDefinitions.size(); i++){
-          string toCompareStr = classDefinitions[i].typeName;
-          if(classNameStr == toCompareStr)
-               return true;
-     }
-     return false;
-}
-
-Variable searchForClass(char* className){
-     string classNameStr = className;
-     for(int i = 0; i < classDefinitions.size(); i++){
-          string toCompareStr = classDefinitions[i].typeName;
-          if(classNameStr == toCompareStr)
-               return classDefinitions[i];
-     }
-     return Variable{0};
-}
-
-int searchForVariable(char* varName,vector<Variable> searchLocation){
-     string varNameStr = varName;
-     for(int i = 0; i < searchLocation.size(); i++){
-          string toCompareStr = searchLocation[i].name;
-          if(varNameStr == toCompareStr && searchLocation[i].scope <= scope)
-               return i;
-     }
-     return -1;
-}
-
-bool buildAST(Ast* &root, Ast* left, Ast* right, Operation op){
-     root = new Ast;
-     root->left = left; 
-     root->right = right;
-     if(left != nullptr && right != nullptr){
-          if(left->type != right->type){
-               yyerror("types do not match");
-               return false;
-          }
-          if(left->type == 5){
-               if(strcmp(left->typeName, right->typeName) != 0){
-                    yyerror("types do not match");
-                    return false;
-               }
-          }
-     }
-     root->operand = op; 
-     return true;
-}
-
-void evalAST(Ast* &root){
-     if(root->left != nullptr)
-          evalAST(root->left);
-     if(root->right != nullptr)
-          evalAST(root->right);
-     switch(root->operand){
-          case None:
-               break;
-          case Add:
-               switch(root->left->type){
-                    case 0:
-                         root->int_val = root->left->int_val + root->right->int_val;
-                         break;
-                    case 1:
-                         root->float_val = root->left->float_val + root->right->float_val;
-                         break;
-                    default:
-                         yyerror("invalid operation for these types");
-                         exit(1);
-                         break;
-               }
-               root->type = root->left->type;
-               strcpy(root->typeName, root->left->typeName);
-               break;
-          case Sub:
-               if(root->right != nullptr)
-                    switch(root->left->type){
-                         case 0:
-                              root->int_val = root->left->int_val - root->right->int_val;
-                              break;
-                         case 1:
-                              root->float_val = root->left->float_val - root->right->float_val;
-                              break;
-                         default:
-                              yyerror("invalid operation for these types");
-                              exit(1);
-                              break;
-                    }
-               else
-                    switch(root->left->type){
-                         case 0:
-                              root->int_val = -root->left->int_val;
-                              break;
-                         case 1:
-                              root->float_val = -root->left->float_val;
-                              break;
-                         default:
-                              yyerror("invalid operation for these types");
-                              exit(1);
-                              break;
-                    }
-               root->type = root->left->type;
-               strcpy(root->typeName, root->left->typeName);
-               break;
-          case Mul:
-               switch(root->left->type){
-                    case 0:
-                         root->int_val = root->left->int_val * root->right->int_val;
-                         break;
-                    case 1:
-                         root->float_val = root->left->float_val * root->right->float_val;
-                         break;
-                    default:
-                         yyerror("invalid operation for these types");
-                         exit(1);
-                         break;
-               }
-               root->type = root->left->type;
-               strcpy(root->typeName, root->left->typeName);
-               break;
-          case Div:
-               switch(root->left->type){
-                    case 0:
-                         root->int_val = root->left->int_val / root->right->int_val;
-                         break;
-                    case 1:
-                         root->float_val = root->left->float_val / root->right->float_val;
-                         break;
-                    default:
-                         yyerror("invalid operation for these types");
-                         exit(1);
-                         break;
-               }
-               root->type = root->left->type;
-               strcpy(root->typeName, root->left->typeName);
-               break;
-          case Mod:
-               switch(root->left->type){
-                    case 0:
-                         root->int_val = root->left->int_val % root->right->int_val;
-                         break;
-                    default:
-                         yyerror("invalid operation for these types");
-                         exit(1);
-                         break;
-               }
-               root->type = root->left->type;
-               strcpy(root->typeName, root->left->typeName);
-               break;
-          case Equal:
-               switch(root->left->type){
-                    case 0:
-                         root->bool_val = root->left->int_val == root->right->int_val;
-                         break;
-                    case 1:
-                         root->bool_val = root->left->float_val == root->right->float_val;
-                         break;
-                    case 2:
-                         root->bool_val = root->left->bool_val == root->right->bool_val;
-                         break;
-                    case 3:
-                         root->bool_val = root->left->char_val == root->right->char_val;
-                         break;
-                    case 4:
-                         root->bool_val = strcmp(root->left->string, root->right->string) == 0;
-                         break;
-                    default:
-                         yyerror("invalid operation for these types");
-                         exit(1);
-                         break;
-               }
-               root->type = 2;
-               strcpy(root->typeName, typeToString(root->type));
-               break;
-          case NotEqual:
-               switch(root->left->type){
-                    case 0:
-                         root->bool_val = root->left->int_val != root->right->int_val;
-                         break;
-                    case 1:
-                         root->bool_val = root->left->float_val != root->right->float_val;
-                         break;
-                    case 2:
-                         root->bool_val = root->left->bool_val != root->right->bool_val;
-                         break;
-                    case 3:
-                         root->bool_val = root->left->char_val != root->right->char_val;
-                         break;
-                    case 4:
-                         root->bool_val = strcmp(root->left->string, root->right->string) != 0;
-                         break;
-                    default:
-                         yyerror("invalid operation for these types");
-                         exit(1);
-                         break;
-               }
-               root->type = 2;
-               strcpy(root->typeName, typeToString(root->type));
-               break;
-          case Lte:
-               switch(root->left->type){
-                    case 0:
-                         root->bool_val = root->left->int_val <= root->right->int_val;
-                         break;
-                    case 1:
-                         root->bool_val = root->left->float_val <= root->right->float_val;
-                         break;
-                    default:
-                         yyerror("invalid operation for these types");
-                         exit(1);
-                         break;
-               }
-               root->type = 2;
-               strcpy(root->typeName, typeToString(root->type));
-               break;
-          case Gte:
-               switch(root->left->type){
-                    case 0:
-                         root->bool_val = root->left->int_val >= root->right->int_val;
-                         break;
-                    case 1:
-                         root->bool_val = root->left->float_val >= root->right->float_val;
-                         break;
-                    default:
-                         yyerror("invalid operation for these types");
-                         exit(1);
-                         break;
-               }
-               root->type = 2;
-               strcpy(root->typeName, typeToString(root->type));
-               break;
-          case Lt:
-               switch(root->left->type){
-                    case 0:
-                         root->bool_val = root->left->int_val < root->right->int_val;
-                         break;
-                    case 1:
-                         root->bool_val = root->left->float_val < root->right->float_val;
-                         break;
-                    default:
-                         yyerror("invalid operation for these types");
-                         exit(1);
-                         break;
-               }
-               root->type = 2;
-               strcpy(root->typeName, typeToString(root->type));
-               break;
-          case Gt:
-               switch(root->left->type){
-                    case 0:
-                         root->bool_val = root->left->int_val > root->right->int_val;
-                         break;
-                    case 1:
-                         root->bool_val = root->left->float_val > root->right->float_val;
-                         break;
-                    default:
-                         yyerror("invalid operation for these types");
-                         exit(1);
-                         break;
-               }
-               root->type = 2;
-               strcpy(root->typeName, typeToString(root->type));
-               break;
-          case And:
-               switch(root->left->type){
-                    case 2:
-                         root->bool_val = root->left->bool_val && root->right->bool_val;
-                         break;
-                    default:
-                         yyerror("invalid operation for these types");
-                         exit(1);
-                         break;
-               }
-               root->type = 2;
-               strcpy(root->typeName, typeToString(root->type));
-               break;
-          case Or:
-               switch(root->left->type){
-                    case 2:
-                         root->bool_val = root->left->bool_val || root->right->bool_val;
-                         break;
-                    default:
-                         yyerror("invalid operation for these types");
-                         exit(1);
-                         break;
-               }
-               root->type = 2;
-               strcpy(root->typeName, typeToString(root->type));
-               break;
-          case Not:
-               switch(root->left->type){
-                    case 2:
-                         root->bool_val = !root->left->bool_val;
-                         break;
-                    default:
-                         yyerror("invalid operation for these types");
-                         exit(1);
-                         break;
-               }
-               root->type = 2;
-               strcpy(root->typeName, typeToString(root->type));
-               break;
-          default:
-               yyerror("unknown operand");
-               exit(1);
-               break;
-     }
-}
-
-void printExpr(Ast* expr){
-     switch(expr->type){
-          case 0:
-               printf("%d\n",expr->int_val);
-               break;
-          case 1:
-               printf("%f\n",expr->float_val);
-               break;
-          case 2:
-               if(expr->bool_val)
-                    printf("true\n");
-               else
-                    printf("false\n");
-               break;
-          case 3:
-               printf("%c\n",expr->char_val);
-               break;
-          case 4:
-               printf("%s\n",expr->string);
-               break;
-          default:
-               printf("unknown\n");
-               break;
-     }
-}
-
-int searchForFunction(char* funcName){
-     string funcNameStr = funcName;
-     for(int i = 0; i < declaredFunctions.size(); i++){
-          string toCompareStr = declaredFunctions[i].name;
-          if(funcNameStr == toCompareStr)
-               return i;
-     }
-     return -1;
-}
 int main(int argc, char** argv){
+     scopeNames.push("global");
      yyin=fopen(argv[1],"r");
      yyparse(); 
 }

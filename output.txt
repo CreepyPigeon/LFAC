@@ -1,0 +1,14 @@
+myStruct with members: { char: z int: te } Test with members: { myStruct with members: { char: z int: te } int: x } Variable "x" of type [int] not initialized - scope global>fun1>
+
+Function fun1 (returns int) with params: (int: x float: y int: z )
+Variable "y" of type [float] initialized with: 4.2 - scope global>fn2>
+
+Function fn2 (returns float) with params: ()
+Variable "z" of type [int] initialized with: 4 - scope global>
+Variable "CONSTANT" of type [int] initialized with: 125 and is a constant - scope global>
+Variable "myArr" of type array[int;5] not initialized - scope global>
+Variable "z" of type [int] initialized with: 5 - scope global>
+Variable "x" of type [int] initialized with: 8 - scope global>main>
+Variable "str" of type [string] initialized with: test string - scope global>main>
+Variable "tttt" of type [int] initialized with: 4 - scope global>main>scop 1>
+Variable "sum" of type [int] initialized with: 12 - scope global>main>do-while>

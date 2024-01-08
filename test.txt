@@ -1,6 +1,6 @@
 struct myStruct {
     char z;
-    array[int,5] te;
+    array[int;5] te;
 };
 struct Test{
     myStruct a;
@@ -11,21 +11,34 @@ int fun1(int x, float y, int z){
     print(x);
     return z;
 }
-myStruct custom;
-# float c := 4.5;
-char afeaqf;
-string c;
+
+float fn2(){
+    float y:=4.2;
+    return 3.0;
+}
+int z:=4;
+
+const int CONSTANT := 125;
+array[int;5] myArr;
+
 begin
-    c := "abcd";
     Eval(3+4);
-    custom.te[3] := 1;
-    int z := custom.te[3]+4;
+    print(CONSTANT);
+    z := 5;
+    TypeOf( fn2() + 3.0);
+    TypeOf( fn2() < 5.0);
     int x := 3 + z;
-    print(x+z>2);
+    Eval(x+z>2);
+    Eval(3+5*(4+2) == 33);
+    string str := "test string";
+    print(str);
     if (x > 2)
     {
         int tttt:=4;
     }
+    do{
+        int sum:=x+4;
+    }while(true);
     print(x);
-    print("STRIGN LITERAL");
+    print("My string literal");
 end
