@@ -66,28 +66,30 @@ extern int yydebug;
     PRINT = 267,                   /* PRINT  */
     EVAL = 268,                    /* EVAL  */
     TYPEOF = 269,                  /* TYPEOF  */
-    ID = 270,                      /* ID  */
-    INT_TYPE = 271,                /* INT_TYPE  */
-    FLOAT_TYPE = 272,              /* FLOAT_TYPE  */
-    CHAR_TYPE = 273,               /* CHAR_TYPE  */
-    STRING_TYPE = 274,             /* STRING_TYPE  */
-    BOOL_TYPE = 275,               /* BOOL_TYPE  */
-    USER_STRUCT = 276,             /* USER_STRUCT  */
-    ASSIGN = 277,                  /* ASSIGN  */
-    EQ = 278,                      /* EQ  */
-    NEQ = 279,                     /* NEQ  */
-    AND = 280,                     /* AND  */
-    OR = 281,                      /* OR  */
-    LE = 282,                      /* LE  */
-    GE = 283,                      /* GE  */
-    LT = 284,                      /* LT  */
-    GT = 285,                      /* GT  */
-    NOT = 286,                     /* NOT  */
-    INT_NR = 287,                  /* INT_NR  */
-    FLOAT_NR = 288,                /* FLOAT_NR  */
-    CHAR = 289,                    /* CHAR  */
-    STRING = 290,                  /* STRING  */
-    BOOL = 291                     /* BOOL  */
+    RETURN = 270,                  /* RETURN  */
+    ID = 271,                      /* ID  */
+    INT_TYPE = 272,                /* INT_TYPE  */
+    FLOAT_TYPE = 273,              /* FLOAT_TYPE  */
+    CHAR_TYPE = 274,               /* CHAR_TYPE  */
+    STRING_TYPE = 275,             /* STRING_TYPE  */
+    BOOL_TYPE = 276,               /* BOOL_TYPE  */
+    USER_STRUCT = 277,             /* USER_STRUCT  */
+    ASSIGN = 278,                  /* ASSIGN  */
+    EQ = 279,                      /* EQ  */
+    NEQ = 280,                     /* NEQ  */
+    AND = 281,                     /* AND  */
+    OR = 282,                      /* OR  */
+    LE = 283,                      /* LE  */
+    GE = 284,                      /* GE  */
+    LT = 285,                      /* LT  */
+    GT = 286,                      /* GT  */
+    NOT = 287,                     /* NOT  */
+    NOELSE = 288,                  /* NOELSE  */
+    INT_NR = 289,                  /* INT_NR  */
+    FLOAT_NR = 290,                /* FLOAT_NR  */
+    CHAR = 291,                    /* CHAR  */
+    STRING = 292,                  /* STRING  */
+    BOOL = 293                     /* BOOL  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -96,7 +98,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 36 "limbaj.y"
+#line 49 "limbaj.y"
 
      int type;
      char* string;
@@ -106,8 +108,10 @@ union YYSTYPE
      char char_val;
      struct Variable* variable;
      struct Ast* ast;
+     struct Function* function;
+     struct Func_Params* func_param;
 
-#line 111 "limbaj.tab.h"
+#line 115 "limbaj.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

@@ -6,11 +6,23 @@ struct Test{
     myStruct a;
     int x;
 };
-int c;
-float abc := c;
-int x;
+int fun1(int x, float y, int z){
+    x := 4;
+    return z;
+}
+float c;
+float abc;
+Test ca;
 char abd;
 array[int,5] myArr;
+int y;
 begin
-    y:=3;
+    myArr[4] := 5;
+    ca.a.te[4] := 4 + fun1(3,0.0,5);
+    int x;
+    x := fun1(3,0.0,5);
+    int test;
+    if(x > 2){
+        test:=test+1;
+    };
 end

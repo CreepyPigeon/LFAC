@@ -19,6 +19,7 @@
 "array" {return ARRAY;}
 "begin" {return BGIN;}
 "end"   {return END;}
+"return" {return RETURN;}
 
 "print"     {return PRINT;}
 "Eval"      {return EVAL;}
@@ -32,8 +33,8 @@
 ("false"|"true")                    {yylval.bool_val = (yytext[0]=='t'); return BOOL;}
 [_a-zA-Z][_a-zA-Z0-9]*              {yylval.string = strdup(yytext); return ID;} // Identificatori pt structs/variabile/functii
 
-"0"|[-]?[1-9][0-9]*                 {yylval.int_val = atoi(yytext); return INT_NR;}
-("0"|[-]?[1-9][0-9]*)"."[0-9]+      {yylval.float_val = atof(yytext); return FLOAT_NR;}
+"0"|[1-9][0-9]*                 {yylval.int_val = atoi(yytext); return INT_NR;}
+("0"|[1-9][0-9]*)"."[0-9]+      {yylval.float_val = atof(yytext); return FLOAT_NR;}
 \'(.)\'                             {yylval.char_val = yytext[1]; return CHAR;}
 \"([^"\n]|\\\")*\"                  {   // Match la tot ce intre ghilimele mai putin ", \n, \"
                                         yylval.string = (char*)malloc(yyleng-1);

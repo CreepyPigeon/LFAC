@@ -41,7 +41,7 @@ struct Variable{
      bool isInit;
      int scope;
      union {
-          char* string;
+          char string[200];
           int int_val;
           float float_val;
           bool bool_val;
@@ -50,6 +50,17 @@ struct Variable{
      int arraySize;
      vector<Variable> structVars;
      vector<Variable> arrayElements;
+};
+
+struct Func_Params{
+     vector<Variable> params;
+};
+
+struct Function{
+     char name[30];
+     int type;
+     char typeName[20];
+     Func_Params params;
 };
 
 void debugPrint(Variable var){
@@ -73,10 +84,11 @@ void debugPrintVar(Variable var){
 }
 struct Ast{
      int type;
+     char typeName[20];
      int isConst;
      Operation operand;
      union {
-          char* string;
+          char string[200];
           int int_val;
           float float_val;
           bool bool_val;
