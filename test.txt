@@ -8,21 +8,13 @@ struct Test{
 };
 int fun1(int x, float y, int z){
     x := 4;
+    print(x);
     return z;
 }
-float c;
-float abc;
-Test ca;
-char abd;
-array[int,5] myArr;
-int y;
+float c := 4.5;
+float y := 5.0 + 3.0;
 begin
-    myArr[4] := 5;
-    ca.a.te[4] := 4 + fun1(3,0.0,5);
-    int x;
-    x := fun1(3,0.0,5);
-    int test;
-    if(x > 2){
-        test:=test+1;
-    };
+    print(y);
+    print(y > 1.5);
+    print("STRIGN LITERAL");
 end

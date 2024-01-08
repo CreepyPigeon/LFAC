@@ -30,6 +30,7 @@ enum Operation{
      And,
      Or,
      Not,
+     None
 };
 
 struct Variable{
