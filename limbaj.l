@@ -39,6 +39,7 @@
 \"([^"\n]|\\\")*\"                  {   // Match la tot ce intre ghilimele mai putin ", \n, \"
                                         yylval.string = (char*)malloc(yyleng-1);
                                         strncpy(yylval.string, yytext+1, yyleng-2);
+                                        yylval.string[yyleng-2] = '\0';
                                         return STRING;
                                     }
 

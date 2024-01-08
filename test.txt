@@ -11,10 +11,21 @@ int fun1(int x, float y, int z){
     print(x);
     return z;
 }
-float c := 4.5;
-float y := 5.0 + 3.0;
+myStruct custom;
+# float c := 4.5;
+char afeaqf;
+string c;
 begin
-    print(y);
-    print(y > 1.5);
+    c := "abcd";
+    Eval(3+4);
+    custom.te[3] := 1;
+    int z := custom.te[3]+4;
+    int x := 3 + z;
+    print(x+z>2);
+    if (x > 2)
+    {
+        int tttt:=4;
+    }
+    print(x);
     print("STRIGN LITERAL");
 end

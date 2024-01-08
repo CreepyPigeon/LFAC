@@ -939,81 +939,82 @@ YY_RULE_SETUP
 {   // Match la tot ce intre ghilimele mai putin ", \n, \"
                                         yylval.string = (char*)malloc(yyleng-1);
                                         strncpy(yylval.string, yytext+1, yyleng-2);
+                                        yylval.string[yyleng-2] = '\0';
                                         return STRING;
                                     }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 45 "limbaj.l"
+#line 46 "limbaj.l"
 {return ASSIGN;}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 46 "limbaj.l"
+#line 47 "limbaj.l"
 {return EQ;}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 47 "limbaj.l"
+#line 48 "limbaj.l"
 {return NEQ;}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 48 "limbaj.l"
+#line 49 "limbaj.l"
 {return LT;}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 49 "limbaj.l"
+#line 50 "limbaj.l"
 {return LE;}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 50 "limbaj.l"
+#line 51 "limbaj.l"
 {return GT;}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 51 "limbaj.l"
+#line 52 "limbaj.l"
 {return GE;}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 52 "limbaj.l"
+#line 53 "limbaj.l"
 {return AND;}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 53 "limbaj.l"
+#line 54 "limbaj.l"
 {return OR;}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 54 "limbaj.l"
+#line 55 "limbaj.l"
 {return NOT;}
 	YY_BREAK
 case 37:
 /* rule 37 can match eol */
 YY_RULE_SETUP
-#line 57 "limbaj.l"
+#line 58 "limbaj.l"
 {yylineno++;} //New line
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 58 "limbaj.l"
+#line 59 "limbaj.l"
 {} //Whitespaces
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 61 "limbaj.l"
+#line 62 "limbaj.l"
 {return yytext[0];} //Returnam orice caracter
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 64 "limbaj.l"
+#line 65 "limbaj.l"
 ECHO;
 	YY_BREAK
-#line 1017 "lex.yy.c"
+#line 1018 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2018,4 +2019,4 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 64 "limbaj.l"
+#line 65 "limbaj.l"
