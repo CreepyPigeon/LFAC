@@ -589,15 +589,15 @@ static const yytype_int8 yytranslate[] =
 static const yytype_int16 yyrline[] =
 {
        0,    67,    67,    70,    73,    76,    79,    82,    85,    90,
-      91,    94,    94,   107,   109,   110,   112,   119,   134,   153,
-     158,   165,   165,   165,   181,   181,   198,   205,   214,   217,
-     231,   232,   234,   244,   323,   339,   362,   396,   396,   398,
-     399,   402,   435,   436,   436,   437,   437,   438,   438,   439,
-     440,   441,   441,   441,   442,   451,   460,   464,   467,   467,
-     487,   493,   499,   502,   510,   533,   549,   573,   574,   575,
-     576,   577,   578,   579,   580,   581,   582,   583,   584,   585,
-     586,   587,   588,   611,   612,   613,   614,   615,   616,   617,
-     648,   649,   650,   651,   652
+      91,    94,    94,   107,   109,   110,   112,   119,   134,   157,
+     162,   169,   169,   169,   185,   185,   202,   209,   218,   221,
+     235,   236,   238,   248,   327,   343,   370,   404,   404,   406,
+     407,   410,   443,   444,   444,   445,   445,   446,   446,   447,
+     448,   449,   449,   449,   450,   459,   468,   472,   475,   475,
+     495,   501,   507,   510,   518,   541,   557,   581,   582,   583,
+     584,   585,   586,   587,   588,   589,   590,   591,   592,   593,
+     594,   595,   596,   619,   620,   621,   622,   623,   624,   625,
+     656,   657,   658,   659,   660
 };
 #endif
 
@@ -1547,6 +1547,10 @@ yyreduce:
                     }
                     newVar((yyval.variable), (yyvsp[-4].type), (yyvsp[0].string),false, true, false, scope);
                     (yyval.variable)->arraySize = (yyvsp[-2].ast)->int_val;
+                    if((yyval.variable)->arraySize <= 0){
+                         yyerror("array size must be positive");
+                         return 0;
+                    }
                     for(int i = 0; i < (yyval.variable)->arraySize; i++){
                          struct Variable* temp = new Variable;
                          temp->type = (yyvsp[-4].type);
@@ -1554,43 +1558,43 @@ yyreduce:
                          (yyval.variable)->arrayElements.push_back(*temp);
                     }
                }
-#line 1558 "limbaj.tab.c"
+#line 1562 "limbaj.tab.c"
     break;
 
   case 19: /* functions: func_decl  */
-#line 153 "limbaj.y"
+#line 157 "limbaj.y"
                      {
                declaredFunctions.push_back(*currentFunction);
                debugPrintFunc(*currentFunction);
                currentFunction = NULL;
           }
-#line 1568 "limbaj.tab.c"
+#line 1572 "limbaj.tab.c"
     break;
 
   case 20: /* functions: functions func_decl  */
-#line 158 "limbaj.y"
+#line 162 "limbaj.y"
                                {
                declaredFunctions.push_back(*currentFunction);
                debugPrintFunc(*currentFunction);
                currentFunction = NULL;
           }
-#line 1578 "limbaj.tab.c"
+#line 1582 "limbaj.tab.c"
     break;
 
   case 21: /* $@2: %empty  */
-#line 165 "limbaj.y"
+#line 169 "limbaj.y"
                         {currentFuncParams = new Func_Params;}
-#line 1584 "limbaj.tab.c"
+#line 1588 "limbaj.tab.c"
     break;
 
   case 22: /* $@3: %empty  */
-#line 165 "limbaj.y"
+#line 169 "limbaj.y"
                                                                {increaseScope((yyvsp[-2].string));}
-#line 1590 "limbaj.tab.c"
+#line 1594 "limbaj.tab.c"
     break;
 
   case 23: /* func_decl: TYPE ID '(' $@2 $@3 func_decl_list ')' '{' list RETURN EXPR ';' '}'  */
-#line 165 "limbaj.y"
+#line 169 "limbaj.y"
                                                                                                                                     {
                decreaseScope();
                if(searchForFunction((yyvsp[-11].string))>-1){
@@ -1607,17 +1611,17 @@ yyreduce:
                     return 0;
                }
           }
-#line 1611 "limbaj.tab.c"
+#line 1615 "limbaj.tab.c"
     break;
 
   case 24: /* $@4: %empty  */
-#line 181 "limbaj.y"
+#line 185 "limbaj.y"
                                 {increaseScope((yyvsp[-3].string));}
-#line 1617 "limbaj.tab.c"
+#line 1621 "limbaj.tab.c"
     break;
 
   case 25: /* func_decl: TYPE ID '(' ')' '{' $@4 list RETURN EXPR ';' '}'  */
-#line 181 "limbaj.y"
+#line 185 "limbaj.y"
                                                                               {
                decreaseScope();
                if(searchForFunction((yyvsp[-9].string))>-1){
@@ -1633,11 +1637,11 @@ yyreduce:
                     return 0;
                }
           }
-#line 1637 "limbaj.tab.c"
+#line 1641 "limbaj.tab.c"
     break;
 
   case 26: /* func_decl_list: func_param  */
-#line 198 "limbaj.y"
+#line 202 "limbaj.y"
                             {
                     if(searchForVariable((yyvsp[0].variable)->name,currentFuncParams->params)>-1){
                          yyerror("variable with this name already declared");
@@ -1645,11 +1649,11 @@ yyreduce:
                     }
                     currentFuncParams->params.push_back(*(yyvsp[0].variable));declaredVariables.push_back(*(yyvsp[0].variable));
                }
-#line 1649 "limbaj.tab.c"
+#line 1653 "limbaj.tab.c"
     break;
 
   case 27: /* func_decl_list: func_decl_list ',' func_param  */
-#line 205 "limbaj.y"
+#line 209 "limbaj.y"
                                                {
                     if(searchForVariable((yyvsp[0].variable)->name,currentFuncParams->params)>-1){
                          yyerror("variable with this name already declared");
@@ -1657,19 +1661,19 @@ yyreduce:
                     }
                     currentFuncParams->params.push_back(*(yyvsp[0].variable));declaredVariables.push_back(*(yyvsp[0].variable));
                }
-#line 1661 "limbaj.tab.c"
+#line 1665 "limbaj.tab.c"
     break;
 
   case 28: /* func_param: TYPE ID  */
-#line 214 "limbaj.y"
+#line 218 "limbaj.y"
                      {
                newVar((yyval.variable), (yyvsp[-1].type), (yyvsp[0].string),false, false, false, scope);
           }
-#line 1669 "limbaj.tab.c"
+#line 1673 "limbaj.tab.c"
     break;
 
   case 29: /* func_param: ID ID  */
-#line 217 "limbaj.y"
+#line 221 "limbaj.y"
                    {(yyval.variable) = new Variable; if(!searchClasses((yyvsp[-1].string))){
                          yyerror("type with this name does not exist");
                          return 0;
@@ -1680,11 +1684,11 @@ yyreduce:
                     //debugPrint(*$$);
                     strcpy((yyval.variable)->typeName, (yyvsp[-1].string));
                }
-#line 1684 "limbaj.tab.c"
+#line 1688 "limbaj.tab.c"
     break;
 
   case 32: /* var_decl: TYPE ID  */
-#line 234 "limbaj.y"
+#line 238 "limbaj.y"
                   {
                     if(searchForVariable((yyvsp[0].string),declaredVariables)>-1){
                          yyerror("variable with this name already declared");
@@ -1695,11 +1699,11 @@ yyreduce:
                     debugPrintVarDetailed(*var);
                     declaredVariables.push_back(*var);
                }
-#line 1699 "limbaj.tab.c"
+#line 1703 "limbaj.tab.c"
     break;
 
   case 33: /* var_decl: TYPE ID ASSIGN EXPR  */
-#line 244 "limbaj.y"
+#line 248 "limbaj.y"
                                     {
                     if(searchForVariable((yyvsp[-2].string),declaredVariables)>-1){
                          yyerror("variable with this name already declared");
@@ -1732,11 +1736,11 @@ yyreduce:
                     debugPrintVarDetailed(*var);
                     declaredVariables.push_back(*var);
                }
-#line 1736 "limbaj.tab.c"
+#line 1740 "limbaj.tab.c"
     break;
 
   case 34: /* var_decl: ID ID  */
-#line 323 "limbaj.y"
+#line 327 "limbaj.y"
                       {
                     if(searchForVariable((yyvsp[0].string),declaredVariables)>-1){
                          yyerror("variable with this name already declared");
@@ -1753,11 +1757,11 @@ yyreduce:
                     debugPrintVarDetailed(*var);
                     declaredVariables.push_back(*var);
                }
-#line 1757 "limbaj.tab.c"
+#line 1761 "limbaj.tab.c"
     break;
 
   case 35: /* var_decl: ARRAY '[' TYPE ';' EXPR ']' ID  */
-#line 339 "limbaj.y"
+#line 343 "limbaj.y"
                                                {
                     if(searchForVariable((yyvsp[0].string),declaredVariables)>-1){
                          yyerror("variable with this name already declared");
@@ -1771,6 +1775,10 @@ yyreduce:
                          return 0;
                     }
                     var->arraySize = (yyvsp[-2].ast)->int_val;
+                    if(var->arraySize <= 0){
+                         yyerror("array size must be positive");
+                         return 0;
+                    }
                     for(int i = 0; i < var->arraySize; i++){
                          struct Variable* temp = new Variable;
                          char name[]="";
@@ -1780,11 +1788,11 @@ yyreduce:
                     debugPrintVarDetailed(*var);
                     declaredVariables.push_back(*var);
                }
-#line 1784 "limbaj.tab.c"
+#line 1792 "limbaj.tab.c"
     break;
 
   case 36: /* var_decl: CONST TYPE ID ASSIGN EXPR  */
-#line 362 "limbaj.y"
+#line 370 "limbaj.y"
                                           {
                     if(searchForVariable((yyvsp[-2].string),declaredVariables)>-1){
                          yyerror("variable with this name already declared");
@@ -1817,23 +1825,23 @@ yyreduce:
                     debugPrintVarDetailed(*var);
                     declaredVariables.push_back(*var);
                }
-#line 1821 "limbaj.tab.c"
+#line 1829 "limbaj.tab.c"
     break;
 
   case 37: /* $@5: %empty  */
-#line 396 "limbaj.y"
+#line 404 "limbaj.y"
                {char newScope[] = "main";increaseScope(newScope);}
-#line 1827 "limbaj.tab.c"
+#line 1835 "limbaj.tab.c"
     break;
 
   case 38: /* program: BGIN $@5 list END  */
-#line 396 "limbaj.y"
+#line 404 "limbaj.y"
                                                                             {decreaseScope();}
-#line 1833 "limbaj.tab.c"
+#line 1841 "limbaj.tab.c"
     break;
 
   case 41: /* statement: var_access ASSIGN EXPR ';'  */
-#line 402 "limbaj.y"
+#line 410 "limbaj.y"
                                       {
                if((yyvsp[-3].variable)->isConst){
                     yyerror("cannot assign to const variable");
@@ -1867,59 +1875,59 @@ yyreduce:
                }
                debugPrintVarDetailed(*(yyvsp[-3].variable));
           }
-#line 1871 "limbaj.tab.c"
+#line 1879 "limbaj.tab.c"
     break;
 
   case 43: /* $@6: %empty  */
-#line 436 "limbaj.y"
+#line 444 "limbaj.y"
                 {char newScope[100]; sprintf(newScope,"scop %d",scope);increaseScope(newScope);}
-#line 1877 "limbaj.tab.c"
+#line 1885 "limbaj.tab.c"
     break;
 
   case 44: /* statement: '{' $@6 list '}'  */
-#line 436 "limbaj.y"
+#line 444 "limbaj.y"
                                                                                                           {decreaseScope();}
-#line 1883 "limbaj.tab.c"
+#line 1891 "limbaj.tab.c"
     break;
 
   case 45: /* $@7: %empty  */
-#line 437 "limbaj.y"
+#line 445 "limbaj.y"
                                                                      {char newScope[] = "for";increaseScope(newScope);}
-#line 1889 "limbaj.tab.c"
+#line 1897 "limbaj.tab.c"
     break;
 
   case 46: /* statement: FOR '(' var_access ASSIGN EXPR ';' EXPR ';' EXPR ')' '{' $@7 list '}'  */
-#line 437 "limbaj.y"
+#line 445 "limbaj.y"
                                                                                                                                  {decreaseScope();}
-#line 1895 "limbaj.tab.c"
+#line 1903 "limbaj.tab.c"
     break;
 
   case 47: /* $@8: %empty  */
-#line 438 "limbaj.y"
+#line 446 "limbaj.y"
                                    {char newScope[] = "while";increaseScope(newScope);}
-#line 1901 "limbaj.tab.c"
+#line 1909 "limbaj.tab.c"
     break;
 
   case 48: /* statement: WHILE '(' EXPR ')' '{' $@8 list '}'  */
-#line 438 "limbaj.y"
+#line 446 "limbaj.y"
                                                                                                  {decreaseScope();}
-#line 1907 "limbaj.tab.c"
+#line 1915 "limbaj.tab.c"
     break;
 
   case 51: /* $@9: %empty  */
-#line 441 "limbaj.y"
+#line 449 "limbaj.y"
                    {char newScope[] = "do-while";increaseScope(newScope);}
-#line 1913 "limbaj.tab.c"
+#line 1921 "limbaj.tab.c"
     break;
 
   case 52: /* $@10: %empty  */
-#line 441 "limbaj.y"
+#line 449 "limbaj.y"
                                                                                     {decreaseScope();}
-#line 1919 "limbaj.tab.c"
+#line 1927 "limbaj.tab.c"
     break;
 
   case 54: /* statement: PRINT '(' EXPR ')' ';'  */
-#line 442 "limbaj.y"
+#line 450 "limbaj.y"
                                    {
                evalAST((yyvsp[-2].ast));
                if((yyvsp[-2].ast)->type == 5){
@@ -1929,11 +1937,11 @@ yyreduce:
                printf("PRINT: ");
                printExpr((yyvsp[-2].ast));
           }
-#line 1933 "limbaj.tab.c"
+#line 1941 "limbaj.tab.c"
     break;
 
   case 55: /* statement: EVAL '(' EXPR ')' ';'  */
-#line 451 "limbaj.y"
+#line 459 "limbaj.y"
                                  {
                evalAST((yyvsp[-2].ast));
                if((yyvsp[-2].ast)->type == 5){
@@ -1943,26 +1951,26 @@ yyreduce:
                printf("EVAL: ");
                printExpr((yyvsp[-2].ast));
           }
-#line 1947 "limbaj.tab.c"
+#line 1955 "limbaj.tab.c"
     break;
 
   case 56: /* statement: TYPEOF '(' EXPR ')' ';'  */
-#line 460 "limbaj.y"
+#line 468 "limbaj.y"
                                     {
                evalAST((yyvsp[-2].ast));
                printf("TYPEOF: %s\n",typeToString((yyvsp[-2].ast)->type));
           }
-#line 1956 "limbaj.tab.c"
+#line 1964 "limbaj.tab.c"
     break;
 
   case 58: /* $@11: %empty  */
-#line 467 "limbaj.y"
+#line 475 "limbaj.y"
                 { currentFuncParams = new Func_Params; }
-#line 1962 "limbaj.tab.c"
+#line 1970 "limbaj.tab.c"
     break;
 
   case 59: /* func_call: ID $@11 '(' func_list ')'  */
-#line 467 "limbaj.y"
+#line 475 "limbaj.y"
                                                                           {
                int func_location = searchForFunction((yyvsp[-4].string));
                if(func_location==-1){
@@ -1981,39 +1989,39 @@ yyreduce:
                }
                (yyval.function)->type = declaredFunctions[func_location].type;
           }
-#line 1985 "limbaj.tab.c"
+#line 1993 "limbaj.tab.c"
     break;
 
   case 60: /* func_list: EXPR  */
-#line 487 "limbaj.y"
+#line 495 "limbaj.y"
                  {
                struct Variable* var = new Variable;
                var->type = (yyvsp[0].ast)->type;
                strcpy(var->typeName, (yyvsp[0].ast)->typeName);
                currentFuncParams->params.push_back(*var);
           }
-#line 1996 "limbaj.tab.c"
+#line 2004 "limbaj.tab.c"
     break;
 
   case 61: /* func_list: func_list ',' EXPR  */
-#line 493 "limbaj.y"
+#line 501 "limbaj.y"
                                {
                struct Variable* var = new Variable;
                var->type = (yyvsp[0].ast)->type;
                strcpy(var->typeName, (yyvsp[0].ast)->typeName);
                currentFuncParams->params.push_back(*var);
           }
-#line 2007 "limbaj.tab.c"
+#line 2015 "limbaj.tab.c"
     break;
 
   case 62: /* func_list: %empty  */
-#line 499 "limbaj.y"
+#line 507 "limbaj.y"
             {}
-#line 2013 "limbaj.tab.c"
+#line 2021 "limbaj.tab.c"
     break;
 
   case 63: /* var_access: ID  */
-#line 502 "limbaj.y"
+#line 510 "limbaj.y"
                 {
                int var_location = searchForVariable((yyvsp[0].string),declaredVariables);
                if(var_location==-1){
@@ -2022,11 +2030,11 @@ yyreduce:
                }
                (yyval.variable) = &declaredVariables[var_location];
           }
-#line 2026 "limbaj.tab.c"
+#line 2034 "limbaj.tab.c"
     break;
 
   case 64: /* var_access: ID '[' EXPR ']'  */
-#line 510 "limbaj.y"
+#line 518 "limbaj.y"
                              {
                int var_location = searchForVariable((yyvsp[-3].string),declaredVariables);
                if(var_location==-1){
@@ -2050,11 +2058,11 @@ yyreduce:
                (yyval.variable) = &declaredVariables[var_location].arrayElements[(yyvsp[-1].ast)->int_val];
 
            }
-#line 2054 "limbaj.tab.c"
+#line 2062 "limbaj.tab.c"
     break;
 
   case 65: /* var_access: var_access '.' ID  */
-#line 533 "limbaj.y"
+#line 541 "limbaj.y"
                                {
                if((yyvsp[-2].variable)->type != 5){
                     yyerror("variable is not a struct");
@@ -2071,11 +2079,11 @@ yyreduce:
                }
                (yyval.variable) = &((yyvsp[-2].variable)->structVars[member_location]);
            }
-#line 2075 "limbaj.tab.c"
+#line 2083 "limbaj.tab.c"
     break;
 
   case 66: /* var_access: var_access '.' ID '[' EXPR ']'  */
-#line 549 "limbaj.y"
+#line 557 "limbaj.y"
                                             {
                if((yyvsp[-5].variable)->type != 5){
                     yyerror("variable is not a struct");
@@ -2097,101 +2105,101 @@ yyreduce:
                }
                (yyval.variable) = &((yyvsp[-5].variable)->structVars[member_location].arrayElements[(yyvsp[-1].ast)->int_val]);
            }
-#line 2101 "limbaj.tab.c"
+#line 2109 "limbaj.tab.c"
     break;
 
   case 67: /* EXPR: EXPR '+' EXPR  */
-#line 573 "limbaj.y"
+#line 581 "limbaj.y"
                      {if(!buildAST((yyval.ast), (yyvsp[-2].ast), (yyvsp[0].ast), Add)) return 0;}
-#line 2107 "limbaj.tab.c"
+#line 2115 "limbaj.tab.c"
     break;
 
   case 68: /* EXPR: EXPR '-' EXPR  */
-#line 574 "limbaj.y"
+#line 582 "limbaj.y"
                      {if(!buildAST((yyval.ast), (yyvsp[-2].ast), (yyvsp[0].ast), Sub)) return 0;}
-#line 2113 "limbaj.tab.c"
+#line 2121 "limbaj.tab.c"
     break;
 
   case 69: /* EXPR: EXPR '*' EXPR  */
-#line 575 "limbaj.y"
+#line 583 "limbaj.y"
                      {if(!buildAST((yyval.ast), (yyvsp[-2].ast), (yyvsp[0].ast), Mul)) return 0;}
-#line 2119 "limbaj.tab.c"
+#line 2127 "limbaj.tab.c"
     break;
 
   case 70: /* EXPR: EXPR '/' EXPR  */
-#line 576 "limbaj.y"
+#line 584 "limbaj.y"
                      {if(!buildAST((yyval.ast), (yyvsp[-2].ast), (yyvsp[0].ast), Div)) return 0;}
-#line 2125 "limbaj.tab.c"
+#line 2133 "limbaj.tab.c"
     break;
 
   case 71: /* EXPR: EXPR '%' EXPR  */
-#line 577 "limbaj.y"
+#line 585 "limbaj.y"
                      {if(!buildAST((yyval.ast), (yyvsp[-2].ast), (yyvsp[0].ast), Mod)) return 0;}
-#line 2131 "limbaj.tab.c"
+#line 2139 "limbaj.tab.c"
     break;
 
   case 72: /* EXPR: EXPR EQ EXPR  */
-#line 578 "limbaj.y"
+#line 586 "limbaj.y"
                      {if(!buildAST((yyval.ast), (yyvsp[-2].ast), (yyvsp[0].ast), Equal)) return 0;}
-#line 2137 "limbaj.tab.c"
+#line 2145 "limbaj.tab.c"
     break;
 
   case 73: /* EXPR: EXPR NEQ EXPR  */
-#line 579 "limbaj.y"
+#line 587 "limbaj.y"
                      {if(!buildAST((yyval.ast), (yyvsp[-2].ast), (yyvsp[0].ast), NotEqual)) return 0;}
-#line 2143 "limbaj.tab.c"
+#line 2151 "limbaj.tab.c"
     break;
 
   case 74: /* EXPR: EXPR LE EXPR  */
-#line 580 "limbaj.y"
+#line 588 "limbaj.y"
                      {if(!buildAST((yyval.ast), (yyvsp[-2].ast), (yyvsp[0].ast), Lte)) return 0;}
-#line 2149 "limbaj.tab.c"
+#line 2157 "limbaj.tab.c"
     break;
 
   case 75: /* EXPR: EXPR GE EXPR  */
-#line 581 "limbaj.y"
+#line 589 "limbaj.y"
                      {if(!buildAST((yyval.ast), (yyvsp[-2].ast), (yyvsp[0].ast), Gte)) return 0;}
-#line 2155 "limbaj.tab.c"
+#line 2163 "limbaj.tab.c"
     break;
 
   case 76: /* EXPR: EXPR LT EXPR  */
-#line 582 "limbaj.y"
+#line 590 "limbaj.y"
                      {if(!buildAST((yyval.ast), (yyvsp[-2].ast), (yyvsp[0].ast), Lt)) return 0;}
-#line 2161 "limbaj.tab.c"
+#line 2169 "limbaj.tab.c"
     break;
 
   case 77: /* EXPR: EXPR GT EXPR  */
-#line 583 "limbaj.y"
+#line 591 "limbaj.y"
                      {if(!buildAST((yyval.ast), (yyvsp[-2].ast), (yyvsp[0].ast), Gt)) return 0;}
-#line 2167 "limbaj.tab.c"
+#line 2175 "limbaj.tab.c"
     break;
 
   case 78: /* EXPR: EXPR AND EXPR  */
-#line 584 "limbaj.y"
+#line 592 "limbaj.y"
                      {if(!buildAST((yyval.ast), (yyvsp[-2].ast), (yyvsp[0].ast), And)) return 0;}
-#line 2173 "limbaj.tab.c"
+#line 2181 "limbaj.tab.c"
     break;
 
   case 79: /* EXPR: EXPR OR EXPR  */
-#line 585 "limbaj.y"
+#line 593 "limbaj.y"
                      {if(!buildAST((yyval.ast), (yyvsp[-2].ast), (yyvsp[0].ast), Or)) return 0;}
-#line 2179 "limbaj.tab.c"
+#line 2187 "limbaj.tab.c"
     break;
 
   case 80: /* EXPR: NOT EXPR  */
-#line 586 "limbaj.y"
+#line 594 "limbaj.y"
                      {if(!buildAST((yyval.ast), (yyvsp[0].ast), NULL, Not)) return 0;}
-#line 2185 "limbaj.tab.c"
+#line 2193 "limbaj.tab.c"
     break;
 
   case 81: /* EXPR: '-' EXPR  */
-#line 587 "limbaj.y"
+#line 595 "limbaj.y"
                      {if(!buildAST((yyval.ast), (yyvsp[0].ast), NULL, Sub)) return 0;}
-#line 2191 "limbaj.tab.c"
+#line 2199 "limbaj.tab.c"
     break;
 
   case 82: /* EXPR: func_call  */
-#line 588 "limbaj.y"
+#line 596 "limbaj.y"
                      {   
                          newAST((yyval.ast), (yyvsp[0].function)->type,nullptr,nullptr, None);
                          switch((yyvsp[0].function)->type){
@@ -2215,47 +2223,47 @@ yyreduce:
                               break;
                          }
                     }
-#line 2219 "limbaj.tab.c"
+#line 2227 "limbaj.tab.c"
     break;
 
   case 83: /* EXPR: '(' EXPR ')'  */
-#line 611 "limbaj.y"
+#line 619 "limbaj.y"
                      {(yyval.ast) = (yyvsp[-1].ast);}
-#line 2225 "limbaj.tab.c"
+#line 2233 "limbaj.tab.c"
     break;
 
   case 84: /* EXPR: INT_NR  */
-#line 612 "limbaj.y"
+#line 620 "limbaj.y"
                      {newAST((yyval.ast),0,nullptr,nullptr,None);(yyval.ast)->int_val = (yyvsp[0].int_val);}
-#line 2231 "limbaj.tab.c"
+#line 2239 "limbaj.tab.c"
     break;
 
   case 85: /* EXPR: FLOAT_NR  */
-#line 613 "limbaj.y"
+#line 621 "limbaj.y"
                      {newAST((yyval.ast),1,nullptr,nullptr,None);(yyval.ast)->float_val = (yyvsp[0].float_val);}
-#line 2237 "limbaj.tab.c"
+#line 2245 "limbaj.tab.c"
     break;
 
   case 86: /* EXPR: BOOL  */
-#line 614 "limbaj.y"
+#line 622 "limbaj.y"
                      {newAST((yyval.ast),2,nullptr,nullptr,None);(yyval.ast)->bool_val = (yyvsp[0].bool_val);}
-#line 2243 "limbaj.tab.c"
+#line 2251 "limbaj.tab.c"
     break;
 
   case 87: /* EXPR: CHAR  */
-#line 615 "limbaj.y"
+#line 623 "limbaj.y"
                      {newAST((yyval.ast),3,nullptr,nullptr,None);(yyval.ast)->char_val = (yyvsp[0].char_val);}
-#line 2249 "limbaj.tab.c"
+#line 2257 "limbaj.tab.c"
     break;
 
   case 88: /* EXPR: STRING  */
-#line 616 "limbaj.y"
+#line 624 "limbaj.y"
                      {newAST((yyval.ast),4,nullptr,nullptr,None);strcpy((yyval.ast)->string, (yyvsp[0].string));}
-#line 2255 "limbaj.tab.c"
+#line 2263 "limbaj.tab.c"
     break;
 
   case 89: /* EXPR: var_access  */
-#line 617 "limbaj.y"
+#line 625 "limbaj.y"
                      {
                          (yyval.ast) = new Ast; (yyval.ast)->left = nullptr; (yyval.ast)->right = nullptr; (yyval.ast)->type = (yyvsp[0].variable)->type; strcpy((yyval.ast)->typeName, (yyvsp[0].variable)->typeName);
                          if((yyvsp[0].variable)->isArray){
@@ -2285,11 +2293,11 @@ yyreduce:
                          }
                          (yyval.ast)->operand = None;
                     }
-#line 2289 "limbaj.tab.c"
+#line 2297 "limbaj.tab.c"
     break;
 
 
-#line 2293 "limbaj.tab.c"
+#line 2301 "limbaj.tab.c"
 
       default: break;
     }
@@ -2482,7 +2490,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 654 "limbaj.y"
+#line 662 "limbaj.y"
 
 
 int main(int argc, char** argv){

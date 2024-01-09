@@ -139,6 +139,10 @@ struct_var : TYPE ID {
                     }
                     newVar($$, $3, $7,false, true, false, scope);
                     $$->arraySize = $5->int_val;
+                    if($$->arraySize <= 0){
+                         yyerror("array size must be positive");
+                         return 0;
+                    }
                     for(int i = 0; i < $$->arraySize; i++){
                          struct Variable* temp = new Variable;
                          temp->type = $3;
@@ -349,6 +353,10 @@ var_decl : TYPE ID{
                          return 0;
                     }
                     var->arraySize = $5->int_val;
+                    if(var->arraySize <= 0){
+                         yyerror("array size must be positive");
+                         return 0;
+                    }
                     for(int i = 0; i < var->arraySize; i++){
                          struct Variable* temp = new Variable;
                          char name[]="";
