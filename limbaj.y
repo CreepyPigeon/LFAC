@@ -526,16 +526,20 @@ func_call : ID  { currentFuncParams = new Func_Params; }'(' func_list ')' {
           ;
 
 func_list : EXPR {
+               evalAST($1);
                struct Variable* var = new Variable;
                var->type = $1->type;
                strcpy(var->typeName, $1->typeName);
                currentFuncParams->params.push_back(*var);
+               freeAST($1);
           }
           | func_list ',' EXPR {
+               evalAST($3);
                struct Variable* var = new Variable;
                var->type = $3->type;
                strcpy(var->typeName, $3->typeName);
                currentFuncParams->params.push_back(*var);
+               freeAST($3);
           } 
           | {}// Altfel nu putem apela functii fara parametrii
           ;

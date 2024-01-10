@@ -54,12 +54,15 @@ begin
     mObj.x := 100;
     gv[5] := 10;
 
+    # 
     #TypeOf(giy1);
     #TypeOf(gfun(10,10.5,gs));
     #TypeOf(mObj.x);
     #TypeOf(gv[10]);
     #giy1:=giy1+gfun(1,10.5,gs)+mObj.x-gv[10];
-    # gfun(gfun(1,10.5,gs),10.5, gs); - std::bad_alloc
+    
+    # STD::BAD_ALLOC
+    # gfun(gfun(1,10.5,gs),10.5, gs);
     TypeOf(giy1+5);
     TypeOf(gs);
     
