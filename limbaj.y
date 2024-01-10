@@ -443,10 +443,31 @@ statement : var_access ASSIGN EXPR ';'{
           | func_call
           | '{' {char newScope[100]; sprintf(newScope,"scop %d",scope);increaseScope(newScope);} list '}' {decreaseScope();}
           | FOR '(' var_access ASSIGN EXPR ';' EXPR ';' EXPR ')' '{' {char newScope[] = "for";increaseScope(newScope);} list '}' {decreaseScope();}
-          | WHILE '(' EXPR ')' '{' {char newScope[] = "while";increaseScope(newScope);} list '}' {decreaseScope();}
-          | IF '(' EXPR ')' statement %prec NOELSE
-          | IF '(' EXPR ')' statement ELSE statement
-          | DO '{' {char newScope[] = "do-while";increaseScope(newScope);} list '}' {decreaseScope();} WHILE '(' EXPR ')' ';'
+          | WHILE '(' EXPR ')' '{' {char newScope[] = "while";increaseScope(newScope);} list '}' {
+               decreaseScope();
+               evalAST($3);
+               if($3->type != 2){
+                    yyerror("while condition must be a boolean");
+                    return 0;}
+          }
+          | IF '(' EXPR ')' statement %prec NOELSE {
+               evalAST($3);
+               if($3->type != 2){
+                    yyerror("if condition must be a boolean");
+                    return 0;}
+          }
+          | IF '(' EXPR ')' statement ELSE statement {
+               evalAST($3);
+               if($3->type != 2){
+                    yyerror("if-else condition must be a boolean");
+                    return 0;}
+          }
+          | DO '{' {char newScope[] = "do-while";increaseScope(newScope);} list '}' {decreaseScope();} WHILE '(' EXPR ')' ';' {
+               evalAST($9);
+               if($9->type != 2){
+                    yyerror("while condition must be a boolean");
+                    return 0;}
+          }
           | PRINT '(' EXPR ')' ';' {
                evalAST($3);
                if($3->type == 5){
