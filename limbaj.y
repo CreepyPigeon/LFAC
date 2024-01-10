@@ -38,8 +38,7 @@ vector<Function> declaredFunctions;
 %nonassoc EQ NEQ 
 %left AND OR
 %left LE GE LT GT
-%left '+' '-'
-%left '*' '/' '%'
+%left '+' '-' '*' '/' '%'
 %nonassoc NOT
 %left '(' ')' '[' ']'
 
@@ -149,6 +148,7 @@ struct_var : TYPE ID {
                          strcpy(temp->typeName, typeToString($3));
                          $$->arrayElements.push_back(*temp);
                     }
+                    freeAST($5);
                }// Arrays 
                ;
 
@@ -276,6 +276,7 @@ var_decl : TYPE ID{
                     }
                     debugPrintVarDetailed(*var);
                     declaredVariables.push_back(*var);
+                    freeAST($4);
                }// int x := 5
                /* | TYPE ID ASSIGN ID{
                     if(searchForVariable($2,declaredVariables)>-1){
@@ -338,6 +339,7 @@ var_decl : TYPE ID{
                     struct Variable temp = searchForClass($1);
                     strcpy(var->typeName, $1);
                     debugPrintVarDetailed(*var);
+                    var->structVars = temp.structVars;
                     declaredVariables.push_back(*var);
                }// MyStruct x; - primul ID e clasa, a doilea ID e numele variabilei
                | ARRAY '[' TYPE ';' EXPR ']' ID{
@@ -365,6 +367,7 @@ var_decl : TYPE ID{
                     }
                     debugPrintVarDetailed(*var);
                     declaredVariables.push_back(*var);
+                    freeAST($5);
                }// Arrays; am gandit arrays ca fiind
                 // array[int,5] myArray; - asta e un exemplu
                | CONST TYPE ID ASSIGN EXPR{
@@ -398,6 +401,7 @@ var_decl : TYPE ID{
                     }
                     debugPrintVarDetailed(*var);
                     declaredVariables.push_back(*var);
+                    freeAST($5);
                }// const int x := 5
                ;
 
@@ -439,6 +443,7 @@ statement : var_access ASSIGN EXPR ';'{
                          break;
                }
                debugPrintVarDetailed(*$1);
+               freeAST($3);
           }
           | func_call
           | '{' {char newScope[100]; sprintf(newScope,"scop %d",scope);increaseScope(newScope);} list '}' {decreaseScope();}
@@ -449,24 +454,28 @@ statement : var_access ASSIGN EXPR ';'{
                if($3->type != 2){
                     yyerror("while condition must be a boolean");
                     return 0;}
+               freeAST($3);
           }
           | IF '(' EXPR ')' statement %prec NOELSE {
                evalAST($3);
                if($3->type != 2){
                     yyerror("if condition must be a boolean");
                     return 0;}
+               freeAST($3);
           }
           | IF '(' EXPR ')' statement ELSE statement {
                evalAST($3);
                if($3->type != 2){
                     yyerror("if-else condition must be a boolean");
                     return 0;}
+               freeAST($3);
           }
           | DO '{' {char newScope[] = "do-while";increaseScope(newScope);} list '}' {decreaseScope();} WHILE '(' EXPR ')' ';' {
                evalAST($9);
                if($9->type != 2){
                     yyerror("while condition must be a boolean");
                     return 0;}
+               freeAST($9);
           }
           | PRINT '(' EXPR ')' ';' {
                evalAST($3);
@@ -476,6 +485,7 @@ statement : var_access ASSIGN EXPR ';'{
                }
                printf("PRINT: ");
                printExpr($3);
+               freeAST($3);
           }
           | EVAL '(' EXPR ')' ';'{
                evalAST($3);
@@ -485,10 +495,12 @@ statement : var_access ASSIGN EXPR ';'{
                }
                printf("EVAL: ");
                printExpr($3);
+               freeAST($3);
           }
           | TYPEOF '(' EXPR ')' ';' {
                evalAST($3);
                printf("TYPEOF: %s\n",typeToString($3->type));
+               freeAST($3);
           }
           | var_decl ';'
           ;
@@ -557,7 +569,7 @@ var_access : ID {
                     return 0;
                }
                $$ = &declaredVariables[var_location].arrayElements[$3->int_val];
-
+               freeAST($3);
            }
            | var_access '.' ID {
                if($1->type != 5){
@@ -595,6 +607,7 @@ var_access : ID {
                     return 0;
                }
                $$ = &($1->structVars[member_location].arrayElements[$5->int_val]);
+               freeAST($5);
            }
            ;
 

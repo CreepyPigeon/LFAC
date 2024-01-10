@@ -1,14 +1,30 @@
-myStruct with members: { char: z int: te } Test with members: { myStruct with members: { char: z int: te } int: x } Variable "x" of type [int] not initialized - scope global>fun1>
+MyType with members: { int: x int: y } Variable "ix" of type [int] not initialized - scope global>gfun>
 
-Function fun1 (returns int) with params: (int: x float: y int: z )
-Variable "y" of type [float] initialized with: 4.2 - scope global>fn2>
+Function gfun (returns int) with params: (int: z float: f string: s )
+Variable "ret" of type [float] not initialized - scope global>ff>
 
-Function fn2 (returns float) with params: ()
-Variable "z" of type [int] initialized with: 4 - scope global>
-Variable "CONSTANT" of type [int] initialized with: 125 and is a constant - scope global>
-Variable "myArr" of type array[int;5] not initialized - scope global>
-Variable "z" of type [int] initialized with: 5 - scope global>
-Variable "x" of type [int] initialized with: 8 - scope global>main>
-Variable "str" of type [string] initialized with: test string - scope global>main>
-Variable "tttt" of type [int] initialized with: 4 - scope global>main>scop 1>
-Variable "sum" of type [int] initialized with: 12 - scope global>main>do-while>
+Function ff (returns float) with params: (int: x )
+Variable "result" of type [bool] initialized with: 1 - scope global>check>
+
+Function check (returns bool) with params: ()
+Variable "mObj" of type [MyType] not initialized - scope global>
+Variable "ix" of type [int] not initialized - scope global>
+Variable "giy1" of type [int] not initialized - scope global>
+Variable "giy2" of type [int] not initialized - scope global>
+Variable "gf" of type [float] initialized with: 10.4 - scope global>
+Variable "gs" of type [string] not initialized - scope global>
+Variable "gc" of type [char] not initialized - scope global>
+Variable "gb" of type [bool] not initialized - scope global>
+Variable "gv" of type array[int;100] not initialized - scope global>
+Variable "gc" of type [char] not initialized - scope global>
+Variable "gs" of type [string] not initialized - scope global>
+Variable "gb" of type [bool] not initialized - scope global>
+Variable "giy1" of type [int] not initialized - scope global>
+Variable "giy2" of type [int] not initialized - scope global>
+Variable "i" of type [int] not initialized - scope global>main>
+Variable "ia" of type [int] initialized with: 1 - scope global>main>
+Variable "ia" of type [int] initialized with: 2 - scope global>main>
+Variable "ia" of type [int] initialized with: 1 - scope global>main>
+Variable "x" of type [int] not initialized - scope global>
+Variable "" of type [int] not initialized - scope global>
+Variable "mix" of type [int] not initialized - scope global>main>

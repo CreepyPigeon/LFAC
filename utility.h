@@ -566,6 +566,14 @@ void printExpr(Ast* expr){
      }
 }
 
+void freeAST(Ast* &ast){
+     if(ast->left != nullptr)
+          freeAST(ast->left);
+     if(ast->right != nullptr)
+          freeAST(ast->right);
+     delete ast;
+}
+
 int searchForFunction(char* funcName){
      string funcNameStr = funcName;
      for(int i = 0; i < declaredFunctions.size(); i++){
